@@ -113,6 +113,22 @@ public class OptionsParser {
             throw UserError.invalidArgumentError(message: InvalidArgErrorPrefix + "\(name); expected array of documents")
         }
     }
+    static func getWriteConcern(_ obj: Any?, _ name: String) throws -> WriteConcern? {
+        if obj == nil {
+            return nil
+        }
+        
+        if let jsObj = obj as? [String: Any] {
+            let journal = try getBool(jsObj["j"], "\(name)[j]")
+            let w = try getInt32(jsObj["w"], "\(name)[w]")!
+            let wtimeout = try getInt64(jsObj["wtimeout"], "\(name)[wtimeout]")
+            return try WriteConcern(journal: journal, w: WriteConcern.W.number(w), wtimeoutMS: wtimeout)
+        } else if let intObj = obj as? Int32 {
+            return try WriteConcern(journal: nil, w: WriteConcern.W.number(intObj), wtimeoutMS: nil)
+        } else {
+            throw UserError.invalidArgumentError(message: InvalidArgErrorPrefix + "\(name); expected number or {w?: number, j?: boolean, wtimeout?: number}")
+        }
+    }
 
     static func getFindOptions(_ obj: [String : Any]?) throws -> FindOptions? {
         if obj == nil {
@@ -197,7 +213,7 @@ public class OptionsParser {
         let maxTimeMS = try getInt64(obj!["maxTimeMS"], "maxTimeMS")
         let readConcern: ReadConcern? = nil
         let readPreference: ReadPreference? = nil
-        let writeConcern: WriteConcern? = nil
+        let writeConcern = try getWriteConcern(obj!["writeConcern"], "writeConcern")
         
         return AggregateOptions(allowDiskUse: allowDiskUse,
                                 batchSize: batchSize,
@@ -217,7 +233,9 @@ public class OptionsParser {
         }
         
         let bypassDocumentValidation = try getBool(obj!["bypassDocumentValidation"], "bypassDocumentValidation")
-        return InsertOneOptions(bypassDocumentValidation: bypassDocumentValidation, writeConcern: nil)
+        let writeConcern = try getWriteConcern(obj!["writeConcern"], "writeConcern")
+
+        return InsertOneOptions(bypassDocumentValidation: bypassDocumentValidation, writeConcern: writeConcern)
     }
     
     static func getInsertManyOptions(_ obj: [String: Any]?) throws -> InsertManyOptions? {
@@ -227,7 +245,8 @@ public class OptionsParser {
         
         let bypassDocumentValidation = try getBool(obj!["bypassDocumentValidation"], "bypassDocumentValidation")
         let ordered = try getBool(obj!["ordered"], "ordered")
-        return InsertManyOptions(bypassDocumentValidation: bypassDocumentValidation, ordered: ordered, writeConcern: nil)
+        let writeConcern = try getWriteConcern(obj!["writeConcern"], "writeConcern")
+        return InsertManyOptions(bypassDocumentValidation: bypassDocumentValidation, ordered: ordered, writeConcern: writeConcern)
     }
     
     static func getUpdateOptions(_ obj: [String: Any]?) throws -> UpdateOptions? {
@@ -239,11 +258,13 @@ public class OptionsParser {
         let bypassDocumentValidation = try getBool(obj!["bypassDocumentValidation"], "bypassDocumentValidation")
         let collation = try getDocument(obj!["collation"], "collation")
         let upsert = try getBool(obj!["upsert"], "upsert")
+        let writeConcern = try getWriteConcern(obj!["writeConcern"], "writeConcern")
+
         return UpdateOptions(arrayFilters: arrayFilters,
                              bypassDocumentValidation: bypassDocumentValidation,
                              collation: collation,
                              upsert: upsert,
-                             writeConcern: nil
+                             writeConcern: writeConcern
         )
     }
     
@@ -255,10 +276,12 @@ public class OptionsParser {
         let bypassDocumentValidation = try getBool(obj!["bypassDocumentValidation"], "bypassDocumentValidation")
         let collation = try getDocument(obj!["collation"], "collation")
         let upsert = try getBool(obj!["upsert"], "upsert")
+        let writeConcern = try getWriteConcern(obj!["writeConcern"], "writeConcern")
+
         return ReplaceOptions(bypassDocumentValidation: bypassDocumentValidation,
                              collation: collation,
                              upsert: upsert,
-                             writeConcern: nil
+                             writeConcern: writeConcern
         )
     }
     
@@ -268,7 +291,9 @@ public class OptionsParser {
         }
         
         let collation = try getDocument(obj!["collation"], "collation")
+        let writeConcern = try getWriteConcern(obj!["writeConcern"], "writeConcern")
+
         return DeleteOptions(collation: collation,
-                             writeConcern: nil
+                             writeConcern: writeConcern
         )
     }}
