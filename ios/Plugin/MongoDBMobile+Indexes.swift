@@ -83,7 +83,7 @@ extension MongoDBMobile {
         }
     }
     
-    @objc func listIndexex(_ call: CAPPluginCall) {
+    @objc func listIndexes(_ call: CAPPluginCall) {
         do {
             guard let dbName = call.getString("db") else {
                 throw UserError.invalidArgumentError(message: "db name must be provided and must be a string")

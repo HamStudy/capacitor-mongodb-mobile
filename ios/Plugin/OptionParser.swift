@@ -367,4 +367,93 @@ public class OptionsParser {
         
         return IndexModel(keys: modelDoc, options: options)
     }
+    
+    
+    static func getFindOneAndDeleteOptions(_ obj: [String: Any]?) throws -> FindOneAndDeleteOptions? {
+        let collation = try getDocument(obj!["collation"], "collation")
+        let maxTimeMS: Int64? = try getInt64(obj!["maxTimeMS"], "maxTimeMS")
+        let projection: Document? = try getDocument(obj!["projection"], "projection")
+        let sort: Document? = try getDocument(obj!["document"], "document")
+        let writeConcern = try getWriteConcern(obj!["writeConcern"], "writeConcern")
+
+        return FindOneAndDeleteOptions(collation: collation,
+                                       maxTimeMS: maxTimeMS,
+                                       projection: projection,
+                                       sort: sort,
+                                       writeConcern: writeConcern
+        )
+    }
+    
+    static func getFindOneAndReplaceOptions(_ obj: [String: Any]?) throws -> FindOneAndReplaceOptions? {
+        let bypassDocumentValidation = try getBool(obj!["bypassDocumentValidation"], "bypassDocumentValidation")
+        let collation = try getDocument(obj!["collation"], "collation")
+        let maxTimeMS: Int64? = try getInt64(obj!["maxTimeMS"], "maxTimeMS")
+        let projection: Document? = try getDocument(obj!["projection"], "projection")
+        let returnNewDocument = try getBool(obj!["returnNewDocument"], "returnNewDocument")
+        let returnDocument: ReturnDocument? = (returnNewDocument != nil && returnNewDocument!) ? ReturnDocument.after : ReturnDocument.before
+        let sort: Document? = try getDocument(obj!["document"], "document")
+        let upsert = try getBool(obj!["upsert"], "upsert")
+        let writeConcern = try getWriteConcern(obj!["writeConcern"], "writeConcern")
+        
+        return FindOneAndReplaceOptions(bypassDocumentValidation: bypassDocumentValidation,
+                                        collation: collation,
+                                        maxTimeMS: maxTimeMS,
+                                        projection: projection,
+                                        returnDocument: returnDocument,
+                                        sort: sort,
+                                        upsert: upsert,
+                                        writeConcern: writeConcern
+        )
+    }
+    
+    static func getFindOneAndUpdateOptions(_ obj: [String: Any]?) throws -> FindOneAndUpdateOptions? {
+        let arrayFilters = try getDocumentArray(obj!["arrayFilters"], "arrayFilters")
+        let bypassDocumentValidation = try getBool(obj!["bypassDocumentValidation"], "bypassDocumentValidation")
+        let collation = try getDocument(obj!["collation"], "collation")
+        let maxTimeMS: Int64? = try getInt64(obj!["maxTimeMS"], "maxTimeMS")
+        let projection: Document? = try getDocument(obj!["projection"], "projection")
+        let returnNewDocument = try getBool(obj!["returnNewDocument"], "returnNewDocument")
+        let returnDocument: ReturnDocument? = (returnNewDocument != nil && returnNewDocument!) ? ReturnDocument.after : ReturnDocument.before
+        let sort: Document? = try getDocument(obj!["document"], "document")
+        let upsert = try getBool(obj!["upsert"], "upsert")
+        let writeConcern = try getWriteConcern(obj!["writeConcern"], "writeConcern")
+        
+        return FindOneAndUpdateOptions(arrayFilters: arrayFilters,
+                                       bypassDocumentValidation: bypassDocumentValidation,
+                                       collation: collation,
+                                       maxTimeMS: maxTimeMS,
+                                       projection: projection,
+                                       returnDocument: returnDocument,
+                                       sort: sort,
+                                       upsert: upsert,
+                                       writeConcern: writeConcern
+        )
+    }
+    
+//    static func getFindAndModifyOptions(_ obj: [String: Any]?) throws -> FindAndModifyOptions? {
+//        let arrayFilters = try getDocumentArray(obj!["arrayFilters"], "arrayFilters")
+//        let bypassDocumentValidation = try getBool(obj!["bypassDocumentValidation"], "bypassDocumentValidation")
+//        let collation = try getDocument(obj!["collation"], "collation")
+//        let maxTimeMS: Int64? = try getInt64(obj!["maxTimeMS"], "maxTimeMS")
+//        let projection: Document? = try getDocument(obj!["projection"], "projection")
+//        let remove = try getBool(obj!["remove"], "remove")
+//        let returnNewDocument = try getBool(obj!["returnNewDocument"], "returnNewDocument")
+//        let returnDocument: ReturnDocument? = (returnNewDocument != nil && returnNewDocument!) ? ReturnDocument.after : ReturnDocument.before
+//        let sort: Document? = try getDocument(obj!["document"], "document")
+//        let upsert = try getBool(obj!["upsert"], "upsert")
+//        let writeConcern = try getWriteConcern(obj!["writeConcern"], "writeConcern")
+//
+//        return FindAndModifyOptions(arrayFilters: arrayFilters,
+//                                    bypassDocumentValidation: bypassDocumentValidation,
+//                                    collation: collation,
+//                                    maxTimeMS: maxTimeMS,
+//                                    projection: projection,
+//                                    remove: remove,
+//                                    returnDocument: returnDocument,
+//                                    sort: sort,
+//                                    upsert: upsert,
+//                                    writeConcern: writeConcern
+//        )
+//    }
+    
 }
