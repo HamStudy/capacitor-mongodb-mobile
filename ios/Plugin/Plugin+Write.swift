@@ -155,6 +155,167 @@ extension MongoDBMobile {
         } catch {
             handleError(call, "Could not execute find")
         }
-        
+    }
+    @objc func updateOne(_ call: CAPPluginCall) {
+        do {
+            guard let dbName = call.getString("db") else {
+                throw MDBAPIError.invalidArguments(message: "db name must be provided and must be a string")
+            }
+            guard let collectionName = call.getString("collection") else {
+                throw MDBAPIError.invalidArguments(message: "collection name must be provided and must be a string")
+            }
+            guard let query = try OptionsParser.getDocument(call.getObject("query"), "query") else {
+                throw MDBAPIError.invalidArguments(message: "query must be provided and must be an object")
+            }
+            guard let update = try OptionsParser.getDocument(call.getObject("update"), "update") else {
+                throw MDBAPIError.invalidArguments(message: "doc must be provided and must be a Document object")
+            }
+            let updateOneOpts = try OptionsParser.getUpdateOptions(call.getObject("options"))
+            
+            let db = mongoClient!.db(dbName)
+            let collection = db.collection(collectionName)
+            
+            let updateResult = try collection.updateOne(filter: query, update: update, options: updateOneOpts)
+            if (updateResult == nil) {
+                let res: PluginResultData = [
+                    "success": true,
+                    "matchedCount": -1,
+                    "modifiedCount": -1,
+                    "upsertedId": "null",
+                    "upsertedCount": -1
+                ]
+                call.resolve(res)
+                return
+            }
+            
+            call.resolve([
+                "success": true,
+                "matchedCount": updateResult!.matchedCount,
+                "modifiedCount": updateResult!.modifiedCount,
+                "upsertedId": updateResult!.upsertedId != nil ? bsonToJsValue(updateResult!.upsertedId!.value) : "null",
+                "upsertedCount": updateResult!.upsertedCount
+                ])
+        } catch UserError.invalidArgumentError(let message) {
+            handleError(call, message)
+        } catch {
+            handleError(call, "Could not execute find")
+        }
+    }
+    @objc func updateMany(_ call: CAPPluginCall) {
+        do {
+            guard let dbName = call.getString("db") else {
+                throw MDBAPIError.invalidArguments(message: "db name must be provided and must be a string")
+            }
+            guard let collectionName = call.getString("collection") else {
+                throw MDBAPIError.invalidArguments(message: "collection name must be provided and must be a string")
+            }
+            guard let query = try OptionsParser.getDocument(call.getObject("query"), "query") else {
+                throw MDBAPIError.invalidArguments(message: "query must be provided and must be an object")
+            }
+            guard let update = try OptionsParser.getDocument(call.getObject("update"), "update") else {
+                throw MDBAPIError.invalidArguments(message: "doc must be provided and must be a Document object")
+            }
+            let updateOpts = try OptionsParser.getUpdateOptions(call.getObject("options"))
+            
+            let db = mongoClient!.db(dbName)
+            let collection = db.collection(collectionName)
+            
+            let updateResult = try collection.updateMany(filter: query, update: update, options: updateOpts)
+            if (updateResult == nil) {
+                let res: PluginResultData = [
+                    "success": true,
+                    "matchedCount": -1,
+                    "modifiedCount": -1,
+                    "upsertedId": "null",
+                    "upsertedCount": -1
+                ]
+                call.resolve(res)
+                return
+            }
+            
+            call.resolve([
+                "success": true,
+                "matchedCount": updateResult!.matchedCount,
+                "modifiedCount": updateResult!.modifiedCount,
+                "upsertedId": updateResult!.upsertedId != nil ? bsonToJsValue(updateResult!.upsertedId!.value) : "null",
+                "upsertedCount": updateResult!.upsertedCount
+                ])
+        } catch UserError.invalidArgumentError(let message) {
+            handleError(call, message)
+        } catch {
+            handleError(call, "Could not execute find")
+        }
+    }
+    @objc func deleteOne(_ call: CAPPluginCall) {
+        do {
+            guard let dbName = call.getString("db") else {
+                throw MDBAPIError.invalidArguments(message: "db name must be provided and must be a string")
+            }
+            guard let collectionName = call.getString("collection") else {
+                throw MDBAPIError.invalidArguments(message: "collection name must be provided and must be a string")
+            }
+            guard let query = try OptionsParser.getDocument(call.getObject("query"), "query") else {
+                throw MDBAPIError.invalidArguments(message: "query must be provided and must be an object")
+            }
+            let deleteOpts = try OptionsParser.getDeleteOptions(call.getObject("options"))
+            
+            let db = mongoClient!.db(dbName)
+            let collection = db.collection(collectionName)
+            
+            let deleteResult = try collection.deleteOne(query, options: deleteOpts)
+            if (deleteResult == nil) {
+                let res: PluginResultData = [
+                    "success": true,
+                    "deletedCount": -1,
+                ]
+                call.resolve(res)
+                return
+            }
+            
+            call.resolve([
+                "success": true,
+                "deletedCount": deleteResult!.deletedCount,
+                ])
+        } catch UserError.invalidArgumentError(let message) {
+            handleError(call, message)
+        } catch {
+            handleError(call, "Could not execute find")
+        }
+    }
+    @objc func deleteMany(_ call: CAPPluginCall) {
+        do {
+            guard let dbName = call.getString("db") else {
+                throw MDBAPIError.invalidArguments(message: "db name must be provided and must be a string")
+            }
+            guard let collectionName = call.getString("collection") else {
+                throw MDBAPIError.invalidArguments(message: "collection name must be provided and must be a string")
+            }
+            guard let query = try OptionsParser.getDocument(call.getObject("query"), "query") else {
+                throw MDBAPIError.invalidArguments(message: "query must be provided and must be an object")
+            }
+            let deleteOpts = try OptionsParser.getDeleteOptions(call.getObject("options"))
+            
+            let db = mongoClient!.db(dbName)
+            let collection = db.collection(collectionName)
+            
+            let deleteResult = try collection.deleteMany(query, options: deleteOpts)
+            if (deleteResult == nil) {
+                let res: PluginResultData = [
+                    "success": true,
+                    "deletedCount": -1,
+                ]
+                call.resolve(res)
+                return
+            }
+            
+            call.resolve([
+                "success": true,
+                "deletedCount": deleteResult!.deletedCount,
+                ])
+        } catch UserError.invalidArgumentError(let message) {
+            handleError(call, message)
+        } catch {
+            handleError(call, "Could not execute find")
+        }
     }
 }
