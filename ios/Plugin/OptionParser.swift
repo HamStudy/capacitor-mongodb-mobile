@@ -95,6 +95,24 @@ public class OptionsParser {
             }
         }
     }
+    static func getDocumentArray(_ obj: Any?, _ name: String) throws -> [Document]? {
+        if obj == nil {
+            return nil
+        }
+        
+        if let arrObj = obj as? [Any] {
+            var arr: [Document] = []
+            for (i, step) in arrObj.enumerated() {
+                guard let doc = try getDocument(step, "pipeline[\(i)]") else {
+                    throw UserError.invalidArgumentError(message: "Invalid type for variable \(name)[\(i)]: expected document")
+                }
+                arr.append(doc)
+            }
+            return arr
+        } else {
+            throw UserError.invalidArgumentError(message: InvalidArgErrorPrefix + "\(name); expected array of documents")
+        }
+    }
 
     static func getFindOptions(_ obj: [String : Any]?) throws -> FindOptions? {
         if obj == nil {
@@ -192,4 +210,65 @@ public class OptionsParser {
                                 readPreference: readPreference,
                                 writeConcern: writeConcern)
     }
-}
+    
+    static func getInsertOneOptions(_ obj: [String: Any]?) throws -> InsertOneOptions? {
+        if obj == nil {
+            return nil
+        }
+        
+        let bypassDocumentValidation = try getBool(obj!["bypassDocumentValidation"], "bypassDocumentValidation")
+        return InsertOneOptions(bypassDocumentValidation: bypassDocumentValidation, writeConcern: nil)
+    }
+    
+    static func getInsertManyOptions(_ obj: [String: Any]?) throws -> InsertManyOptions? {
+        if obj == nil {
+            return nil
+        }
+        
+        let bypassDocumentValidation = try getBool(obj!["bypassDocumentValidation"], "bypassDocumentValidation")
+        let ordered = try getBool(obj!["ordered"], "ordered")
+        return InsertManyOptions(bypassDocumentValidation: bypassDocumentValidation, ordered: ordered, writeConcern: nil)
+    }
+    
+    static func getUpdateOptions(_ obj: [String: Any]?) throws -> UpdateOptions? {
+        if obj == nil {
+            return nil
+        }
+        
+        let arrayFilters = try getDocumentArray(obj!["arrayFilters"], "arrayFilters")
+        let bypassDocumentValidation = try getBool(obj!["bypassDocumentValidation"], "bypassDocumentValidation")
+        let collation = try getDocument(obj!["collation"], "collation")
+        let upsert = try getBool(obj!["upsert"], "upsert")
+        return UpdateOptions(arrayFilters: arrayFilters,
+                             bypassDocumentValidation: bypassDocumentValidation,
+                             collation: collation,
+                             upsert: upsert,
+                             writeConcern: nil
+        )
+    }
+    
+    static func getReplaceOptions(_ obj: [String: Any]?) throws -> ReplaceOptions? {
+        if obj == nil {
+            return nil
+        }
+        
+        let bypassDocumentValidation = try getBool(obj!["bypassDocumentValidation"], "bypassDocumentValidation")
+        let collation = try getDocument(obj!["collation"], "collation")
+        let upsert = try getBool(obj!["upsert"], "upsert")
+        return ReplaceOptions(bypassDocumentValidation: bypassDocumentValidation,
+                             collation: collation,
+                             upsert: upsert,
+                             writeConcern: nil
+        )
+    }
+    
+    static func getDeleteOptions(_ obj: [String: Any]?) throws -> DeleteOptions? {
+        if obj == nil {
+            return nil
+        }
+        
+        let collation = try getDocument(obj!["collation"], "collation")
+        return DeleteOptions(collation: collation,
+                             writeConcern: nil
+        )
+    }}

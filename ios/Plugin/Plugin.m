@@ -11,4 +11,8 @@ CAP_PLUGIN(MongoDBMobile, "MongoDBMobile",
            CAP_PLUGIN_METHOD(aggregate, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(cursorGetNext, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(closeCursor, CAPPluginReturnPromise);
+           
+           CAP_PLUGIN_METHOD(insertOne, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(insertMany, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(replaceOne, CAPPluginReturnPromise);
 )
