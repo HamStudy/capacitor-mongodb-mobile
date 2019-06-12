@@ -58,7 +58,7 @@ public class MongoDBMobile: CAPPlugin {
     }
     func returnDocsFromCursor(_ call: CAPPluginCall, cursor: MongoCursor<Document>) {
         var resultsJson: [Any] = []
-        for doc in resultsDocuments {
+        for doc in cursor {
             resultsJson.append(convertToDictionary(text: doc.extendedJSON)!)
         }
         call.resolve(["results": resultsJson])
@@ -102,9 +102,7 @@ public class MongoDBMobile: CAPPlugin {
                 throw MDBAPIError.invalidArguments(message: "query must be provided and must be an object")
             }
             let countOpts = try OptionsParser.getCountOptions(call.getObject("options"))
-            guard let queryDoc = try OptionsParser.getDocument(query, "query") else {
-                throw UserError.invalidArgumentError(message: "query must be provided and must be an object")
-            }
+            let queryDoc = try OptionsParser.getDocument(query, "query")
             
             let db = mongoClient!.db(dbName)
             let collection = db.collection(collectionName)
@@ -184,7 +182,7 @@ public class MongoDBMobile: CAPPlugin {
         }
     }
     
-    @objc func execAggregate(_ call: CAPPluginCall) {
+    @objc func aggregate(_ call: CAPPluginCall) {
         do {
             let useCursor = call.getBool("cursor", false)!
             
