@@ -41,13 +41,13 @@ extension MongoDBMobile {
     @objc func insertOne(_ call: CAPPluginCall) {
         do {
             guard let dbName = call.getString("db") else {
-                throw MDBAPIError.invalidArguments(message: "db name must be provided and must be a string")
+                throw UserError.invalidArgumentError(message: "db name must be provided and must be a string")
             }
             guard let collectionName = call.getString("collection") else {
-                throw MDBAPIError.invalidArguments(message: "collection name must be provided and must be a string")
+                throw UserError.invalidArgumentError(message: "collection name must be provided and must be a string")
             }
             guard let doc = try OptionsParser.getDocument(call.getObject("doc"), "doc") else {
-                throw MDBAPIError.invalidArguments(message: "doc must be provided and must be a Document object")
+                throw UserError.invalidArgumentError(message: "doc must be provided and must be a Document object")
             }
             let insertOneOpts = try OptionsParser.getInsertOneOptions(call.getObject("options"))
             
@@ -77,13 +77,13 @@ extension MongoDBMobile {
     @objc func insertMany(_ call: CAPPluginCall) {
         do {
             guard let dbName = call.getString("db") else {
-                throw MDBAPIError.invalidArguments(message: "db name must be provided and must be a string")
+                throw UserError.invalidArgumentError(message: "db name must be provided and must be a string")
             }
             guard let collectionName = call.getString("collection") else {
-                throw MDBAPIError.invalidArguments(message: "collection name must be provided and must be a string")
+                throw UserError.invalidArgumentError(message: "collection name must be provided and must be a string")
             }
             guard let docs = try OptionsParser.getDocumentArray(call.getArray("doc", Any.self), "docs") else {
-                throw MDBAPIError.invalidArguments(message: "docs must be provided and must be an arrat of Document objects")
+                throw UserError.invalidArgumentError(message: "docs must be provided and must be an arrat of Document objects")
             }
             let insertManyOpts = try OptionsParser.getInsertManyOptions(call.getObject("options"))
             
@@ -114,16 +114,16 @@ extension MongoDBMobile {
     @objc func replaceOne(_ call: CAPPluginCall) {
         do {
             guard let dbName = call.getString("db") else {
-                throw MDBAPIError.invalidArguments(message: "db name must be provided and must be a string")
+                throw UserError.invalidArgumentError(message: "db name must be provided and must be a string")
             }
             guard let collectionName = call.getString("collection") else {
-                throw MDBAPIError.invalidArguments(message: "collection name must be provided and must be a string")
+                throw UserError.invalidArgumentError(message: "collection name must be provided and must be a string")
             }
             guard let query = try OptionsParser.getDocument(call.getObject("query"), "query") else {
-                throw MDBAPIError.invalidArguments(message: "query must be provided and must be an object")
+                throw UserError.invalidArgumentError(message: "query must be provided and must be an object")
             }
             guard let doc = try OptionsParser.getDocument(call.getObject("doc"), "doc") else {
-                throw MDBAPIError.invalidArguments(message: "doc must be provided and must be a Document object")
+                throw UserError.invalidArgumentError(message: "doc must be provided and must be a Document object")
             }
             let replaceOneOpts = try OptionsParser.getReplaceOptions(call.getObject("options"))
             
@@ -159,16 +159,16 @@ extension MongoDBMobile {
     @objc func updateOne(_ call: CAPPluginCall) {
         do {
             guard let dbName = call.getString("db") else {
-                throw MDBAPIError.invalidArguments(message: "db name must be provided and must be a string")
+                throw UserError.invalidArgumentError(message: "db name must be provided and must be a string")
             }
             guard let collectionName = call.getString("collection") else {
-                throw MDBAPIError.invalidArguments(message: "collection name must be provided and must be a string")
+                throw UserError.invalidArgumentError(message: "collection name must be provided and must be a string")
             }
             guard let query = try OptionsParser.getDocument(call.getObject("query"), "query") else {
-                throw MDBAPIError.invalidArguments(message: "query must be provided and must be an object")
+                throw UserError.invalidArgumentError(message: "query must be provided and must be an object")
             }
             guard let update = try OptionsParser.getDocument(call.getObject("update"), "update") else {
-                throw MDBAPIError.invalidArguments(message: "doc must be provided and must be a Document object")
+                throw UserError.invalidArgumentError(message: "doc must be provided and must be a Document object")
             }
             let updateOneOpts = try OptionsParser.getUpdateOptions(call.getObject("options"))
             
@@ -204,16 +204,16 @@ extension MongoDBMobile {
     @objc func updateMany(_ call: CAPPluginCall) {
         do {
             guard let dbName = call.getString("db") else {
-                throw MDBAPIError.invalidArguments(message: "db name must be provided and must be a string")
+                throw UserError.invalidArgumentError(message: "db name must be provided and must be a string")
             }
             guard let collectionName = call.getString("collection") else {
-                throw MDBAPIError.invalidArguments(message: "collection name must be provided and must be a string")
+                throw UserError.invalidArgumentError(message: "collection name must be provided and must be a string")
             }
             guard let query = try OptionsParser.getDocument(call.getObject("query"), "query") else {
-                throw MDBAPIError.invalidArguments(message: "query must be provided and must be an object")
+                throw UserError.invalidArgumentError(message: "query must be provided and must be an object")
             }
             guard let update = try OptionsParser.getDocument(call.getObject("update"), "update") else {
-                throw MDBAPIError.invalidArguments(message: "doc must be provided and must be a Document object")
+                throw UserError.invalidArgumentError(message: "doc must be provided and must be a Document object")
             }
             let updateOpts = try OptionsParser.getUpdateOptions(call.getObject("options"))
             
@@ -249,13 +249,13 @@ extension MongoDBMobile {
     @objc func deleteOne(_ call: CAPPluginCall) {
         do {
             guard let dbName = call.getString("db") else {
-                throw MDBAPIError.invalidArguments(message: "db name must be provided and must be a string")
+                throw UserError.invalidArgumentError(message: "db name must be provided and must be a string")
             }
             guard let collectionName = call.getString("collection") else {
-                throw MDBAPIError.invalidArguments(message: "collection name must be provided and must be a string")
+                throw UserError.invalidArgumentError(message: "collection name must be provided and must be a string")
             }
             guard let query = try OptionsParser.getDocument(call.getObject("query"), "query") else {
-                throw MDBAPIError.invalidArguments(message: "query must be provided and must be an object")
+                throw UserError.invalidArgumentError(message: "query must be provided and must be an object")
             }
             let deleteOpts = try OptionsParser.getDeleteOptions(call.getObject("options"))
             
@@ -285,13 +285,13 @@ extension MongoDBMobile {
     @objc func deleteMany(_ call: CAPPluginCall) {
         do {
             guard let dbName = call.getString("db") else {
-                throw MDBAPIError.invalidArguments(message: "db name must be provided and must be a string")
+                throw UserError.invalidArgumentError(message: "db name must be provided and must be a string")
             }
             guard let collectionName = call.getString("collection") else {
-                throw MDBAPIError.invalidArguments(message: "collection name must be provided and must be a string")
+                throw UserError.invalidArgumentError(message: "collection name must be provided and must be a string")
             }
             guard let query = try OptionsParser.getDocument(call.getObject("query"), "query") else {
-                throw MDBAPIError.invalidArguments(message: "query must be provided and must be an object")
+                throw UserError.invalidArgumentError(message: "query must be provided and must be an object")
             }
             let deleteOpts = try OptionsParser.getDeleteOptions(call.getObject("options"))
             

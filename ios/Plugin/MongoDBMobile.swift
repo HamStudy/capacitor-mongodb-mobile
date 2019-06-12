@@ -4,12 +4,6 @@ import StitchCore
 import StitchLocalMongoDBService
 import MongoSwift
 
-//var dbInstances: [String, MongoDatabase] = []
-
-enum MDBAPIError : Error {
-    case invalidArguments(message: String)
-}
-
 /**
  * Please read the Capacitor iOS Plugin Development Guide
  * here: https://capacitor.ionicframework.com/docs/plugins/ios

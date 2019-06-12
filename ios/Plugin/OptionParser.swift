@@ -44,6 +44,15 @@ public class OptionsParser {
             throw UserError.invalidArgumentError(message: InvalidArgErrorPrefix + "\(name); expected integer");
         }
     }
+    static func getDouble(_ obj: Any?, _ name: String) throws -> Double? {
+        if obj == nil {
+            return nil
+        } else if let dblObj = obj as? Double {
+            return dblObj
+        } else {
+            throw UserError.invalidArgumentError(message: InvalidArgErrorPrefix + "\(name); expected double");
+        }
+    }
     static func getString(_ obj: Any?, _ name: String) throws -> String? {
         if obj == nil {
             return nil
@@ -296,4 +305,66 @@ public class OptionsParser {
         return DeleteOptions(collation: collation,
                              writeConcern: writeConcern
         )
-    }}
+    }
+    
+    static func getIndexOptions(_ obj: [String: Any]?) throws -> IndexOptions? {
+        let background = try getBool(obj!["background"], "background")
+        let expireAfter = try getInt32(obj!["expireAfter"], "expireAfter")
+        let name = try getString(obj!["name"], "name")
+        let sparse = try getBool(obj!["sparse"], "sparse")
+        let storageEngine = try getString(obj!["storageEngine"], "storageEngine")
+        let unique = try getBool(obj!["unique"], "unique")
+        let version = try getInt32(obj!["version"], "version")
+        let defaultLanguage = try getString(obj!["defaultLanguage"], "defaultLanguage")
+        let languageOverride = try getString(obj!["languageOverride"], "languageOverride")
+        let textVersion = try getInt32(obj!["textVersion"], "textVersion")
+        let weights = try getDocument(obj!["weights"], "weights")
+        let sphereVersion = try getInt32(obj!["sphereVersion"], "sphereVersion")
+        let bits = try getInt32(obj!["bits"], "bits")
+        let max = try getDouble(obj!["max"], "max")
+        let min = try getDouble(obj!["min"], "min")
+        let bucketSize = try getInt32(obj!["bucketSize"], "bucketSize")
+        let partialFilterExpression = try getDocument(obj!["partialFilterExpression"], "partialFilterExpression")
+        let collation = try getDocument(obj!["collation"], "collation")
+        
+        return IndexOptions(background: background,
+                            expireAfter: expireAfter,
+                            name: name,
+                            sparse: sparse,
+                            storageEngine: storageEngine,
+                            unique: unique,
+                            version: version,
+                            defaultLanguage: defaultLanguage,
+                            languageOverride: languageOverride,
+                            textVersion: textVersion,
+                            weights: weights,
+                            sphereVersion: sphereVersion,
+                            bits: bits,
+                            max: max,
+                            min: min,
+                            bucketSize: bucketSize,
+                            partialFilterExpression: partialFilterExpression,
+                            collation: collation
+        )
+    }
+    
+    static func getCreateIndexOptions(_ obj: [String: Any]?) throws -> CreateIndexOptions? {
+        let writeConcern = try getWriteConcern(obj!["writeConcern"], "writeConcern")
+        return CreateIndexOptions(writeConcern: writeConcern)
+    }
+    
+    static func getDropIndexOptions(_ obj: [String: Any]?) throws -> DropIndexOptions? {
+        let writeConcern = try getWriteConcern(obj!["writeConcern"], "writeConcern")
+        return DropIndexOptions(writeConcern: writeConcern)
+    }
+    
+    static func getIndexModel(modelObj: Any?, modelField: String = "keys", optsObj: [String: Any]?) throws -> IndexModel {
+        let options = try getIndexOptions(optsObj)
+        
+        guard let modelDoc = try getDocument(modelObj, modelField) else {
+            throw UserError.invalidArgumentError(message: InvalidArgErrorPrefix + "\(modelField); expected document containing keys to index")
+        }
+        
+        return IndexModel(keys: modelDoc, options: options)
+    }
+}

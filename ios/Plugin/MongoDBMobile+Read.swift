@@ -47,13 +47,13 @@ extension MongoDBMobile {
     @objc func count(_ call: CAPPluginCall) {
         do {
             guard let dbName = call.getString("db") else {
-                throw MDBAPIError.invalidArguments(message: "db name must be provided and must be a string")
+                throw UserError.invalidArgumentError(message: "db name must be provided and must be a string")
             }
             guard let collectionName = call.getString("collection") else {
-                throw MDBAPIError.invalidArguments(message: "collection name must be provided and must be a string")
+                throw UserError.invalidArgumentError(message: "collection name must be provided and must be a string")
             }
             guard let query = call.getObject("query") else {
-                throw MDBAPIError.invalidArguments(message: "query must be provided and must be an object")
+                throw UserError.invalidArgumentError(message: "query must be provided and must be an object")
             }
             let countOpts = try OptionsParser.getCountOptions(call.getObject("options"))
             let queryDoc = try OptionsParser.getDocument(query, "query")
@@ -76,13 +76,13 @@ extension MongoDBMobile {
     
     private func _find(_ call: CAPPluginCall) throws -> MongoCursor<Document> {
         guard let dbName = call.getString("db") else {
-            throw MDBAPIError.invalidArguments(message: "db name must be provided and must be a string")
+            throw UserError.invalidArgumentError(message: "db name must be provided and must be a string")
         }
         guard let collectionName = call.getString("collection") else {
-            throw MDBAPIError.invalidArguments(message: "collection name must be provided and must be a string")
+            throw UserError.invalidArgumentError(message: "collection name must be provided and must be a string")
         }
         guard let query = call.getObject("query") else {
-            throw MDBAPIError.invalidArguments(message: "query must be provided and must be an object")
+            throw UserError.invalidArgumentError(message: "query must be provided and must be an object")
         }
         let findOpts = try OptionsParser.getFindOptions(call.getObject("options"))
         let queryDoc = try OptionsParser.getDocument(query, "query")
@@ -95,13 +95,13 @@ extension MongoDBMobile {
     
     private func _execAggregate(_ call: CAPPluginCall) throws -> MongoCursor<Document> {
         guard let dbName = call.getString("db") else {
-            throw MDBAPIError.invalidArguments(message: "db name must be provided and must be a string")
+            throw UserError.invalidArgumentError(message: "db name must be provided and must be a string")
         }
         guard let collectionName = call.getString("collection") else {
-            throw MDBAPIError.invalidArguments(message: "collection name must be provided and must be a string")
+            throw UserError.invalidArgumentError(message: "collection name must be provided and must be a string")
         }
         guard let pipeline = try OptionsParser.getDocumentArray(call.getArray("pipeline", Any.self), "pipeline") else {
-            throw MDBAPIError.invalidArguments(message: "pipeline must be provided and must be an array of pipeline operations")
+            throw UserError.invalidArgumentError(message: "pipeline must be provided and must be an array of pipeline operations")
         }
         let aggOpts = try OptionsParser.getAggregateOptions(call.getObject("options"))
         let db = mongoClient!.db(dbName)
@@ -122,7 +122,7 @@ extension MongoDBMobile {
             } else {
                 returnDocsFromCursor(call, cursor: cursor)
             }
-        } catch MDBAPIError.invalidArguments(let message) {
+        } catch UserError.invalidArgumentError(let message) {
             handleError(call, message)
         } catch {
             handleError(call, "Could not execute find")
@@ -150,18 +150,18 @@ extension MongoDBMobile {
     @objc func cursorGetNext(_ call: CAPPluginCall) {
         do {
             guard let cursorIdStr = call.getString("cursorId") else {
-                throw MDBAPIError.invalidArguments(message: "cusrorId must be provided and must be a string")
+                throw UserError.invalidArgumentError(message: "cusrorId must be provided and must be a string")
             }
             guard let cursorUuid = UUID(uuidString: cursorIdStr) else {
-                throw MDBAPIError.invalidArguments(message: "cusrorId is not in a valid format")
+                throw UserError.invalidArgumentError(message: "cusrorId is not in a valid format")
             }
             guard let cursor = cursorMap[cursorUuid] else {
-                throw MDBAPIError.invalidArguments(message: "cusrorId does not refer to a valid cursor")
+                throw UserError.invalidArgumentError(message: "cusrorId does not refer to a valid cursor")
             }
             
             let batchSize = call.getInt("batchSize") ?? 1
             if batchSize < 1 {
-                throw MDBAPIError.invalidArguments(message: "batchSize must be at least 1")
+                throw UserError.invalidArgumentError(message: "batchSize must be at least 1")
             }
             var resultsJson: [Any] = []
             for doc in cursor {
@@ -189,10 +189,10 @@ extension MongoDBMobile {
     @objc func closeCursor(_ call: CAPPluginCall) {
         do {
             guard let cursorIdStr = call.getString("cursorId") else {
-                throw MDBAPIError.invalidArguments(message: "cusrorId must be provided and must be a string")
+                throw UserError.invalidArgumentError(message: "cusrorId must be provided and must be a string")
             }
             guard let cursorUuid = UUID(uuidString: cursorIdStr) else {
-                throw MDBAPIError.invalidArguments(message: "cusrorId is not in a valid format")
+                throw UserError.invalidArgumentError(message: "cusrorId is not in a valid format")
             }
             
             if cursorMap.removeValue(forKey: cursorUuid) != nil {

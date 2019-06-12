@@ -14,7 +14,7 @@
 		50ADFF99201F53D600D50D53 /* Plugin.h in Headers */ = {isa = PBXBuildFile; fileRef = 50ADFF8B201F53D600D50D53 /* Plugin.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		50ADFFA42020D75100D50D53 /* Capacitor.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50ADFFA52020D75100D50D53 /* Capacitor.framework */; };
 		50ADFFA82020EE4F00D50D53 /* Plugin.m in Sources */ = {isa = PBXBuildFile; fileRef = 50ADFFA72020EE4F00D50D53 /* Plugin.m */; };
-		50E1A94820377CB70090CE1A /* Plugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50E1A94720377CB70090CE1A /* Plugin.swift */; };
+		50E1A94820377CB70090CE1A /* MongoDBMobile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50E1A94720377CB70090CE1A /* MongoDBMobile.swift */; };
 		7927C01222B0536500967241 /* MongoMobile.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7927C01122B0536500967241 /* MongoMobile.framework */; };
 		7927C01422B0536500967241 /* MongoSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7927C01322B0536500967241 /* MongoSwift.framework */; };
 		7927C01822B0536500967241 /* StitchCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7927C01722B0536500967241 /* StitchCore.framework */; };
@@ -24,8 +24,9 @@
 		7927C02022B0536500967241 /* StitchLocalMongoDBService.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7927C01F22B0536500967241 /* StitchLocalMongoDBService.framework */; };
 		7927C02222B0536500967241 /* StitchRemoteMongoDBService.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7927C02122B0536500967241 /* StitchRemoteMongoDBService.framework */; };
 		79B9D87022B06C130083E970 /* OptionParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79B9D86F22B06C130083E970 /* OptionParser.swift */; };
-		79B9D87222B09CDD0083E970 /* Plugin+Read.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79B9D87122B09CDD0083E970 /* Plugin+Read.swift */; };
-		79B9D87422B09D2A0083E970 /* Plugin+Write.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79B9D87322B09D2A0083E970 /* Plugin+Write.swift */; };
+		79B9D87222B09CDD0083E970 /* MongoDBMobile+Read.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79B9D87122B09CDD0083E970 /* MongoDBMobile+Read.swift */; };
+		79B9D87422B09D2A0083E970 /* MongoDBMobile+Write.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79B9D87322B09D2A0083E970 /* MongoDBMobile+Write.swift */; };
+		79B9D87622B0CD450083E970 /* MongoDBMobile+Indexes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79B9D87522B0CD450083E970 /* MongoDBMobile+Indexes.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -48,7 +49,7 @@
 		50ADFF98201F53D600D50D53 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50ADFFA52020D75100D50D53 /* Capacitor.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Capacitor.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		50ADFFA72020EE4F00D50D53 /* Plugin.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Plugin.m; sourceTree = "<group>"; };
-		50E1A94720377CB70090CE1A /* Plugin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Plugin.swift; sourceTree = "<group>"; };
+		50E1A94720377CB70090CE1A /* MongoDBMobile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MongoDBMobile.swift; sourceTree = "<group>"; };
 		5E23F77F099397094342571A /* Pods-Plugin.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Plugin.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Plugin/Pods-Plugin.debug.xcconfig"; sourceTree = "<group>"; };
 		7927C01122B0536500967241 /* MongoMobile.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = MongoMobile.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7927C01322B0536500967241 /* MongoSwift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = MongoSwift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -59,8 +60,9 @@
 		7927C01F22B0536500967241 /* StitchLocalMongoDBService.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = StitchLocalMongoDBService.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7927C02122B0536500967241 /* StitchRemoteMongoDBService.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = StitchRemoteMongoDBService.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		79B9D86F22B06C130083E970 /* OptionParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptionParser.swift; sourceTree = "<group>"; };
-		79B9D87122B09CDD0083E970 /* Plugin+Read.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Plugin+Read.swift"; sourceTree = "<group>"; };
-		79B9D87322B09D2A0083E970 /* Plugin+Write.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Plugin+Write.swift"; sourceTree = "<group>"; };
+		79B9D87122B09CDD0083E970 /* MongoDBMobile+Read.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MongoDBMobile+Read.swift"; sourceTree = "<group>"; };
+		79B9D87322B09D2A0083E970 /* MongoDBMobile+Write.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MongoDBMobile+Write.swift"; sourceTree = "<group>"; };
+		79B9D87522B0CD450083E970 /* MongoDBMobile+Indexes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MongoDBMobile+Indexes.swift"; sourceTree = "<group>"; };
 		91781294A431A2A7CC6EB714 /* Pods-Plugin.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Plugin.release.xcconfig"; path = "Pods/Target Support Files/Pods-Plugin/Pods-Plugin.release.xcconfig"; sourceTree = "<group>"; };
 		96ED1B6440D6672E406C8D19 /* Pods-PluginTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PluginTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PluginTests/Pods-PluginTests.debug.xcconfig"; sourceTree = "<group>"; };
 		F65BB2953ECE002E1EF3E424 /* Pods-PluginTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PluginTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-PluginTests/Pods-PluginTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -120,9 +122,10 @@
 		50ADFF8A201F53D600D50D53 /* Plugin */ = {
 			isa = PBXGroup;
 			children = (
-				50E1A94720377CB70090CE1A /* Plugin.swift */,
-				79B9D87122B09CDD0083E970 /* Plugin+Read.swift */,
-				79B9D87322B09D2A0083E970 /* Plugin+Write.swift */,
+				50E1A94720377CB70090CE1A /* MongoDBMobile.swift */,
+				79B9D87122B09CDD0083E970 /* MongoDBMobile+Read.swift */,
+				79B9D87322B09D2A0083E970 /* MongoDBMobile+Write.swift */,
+				79B9D87522B0CD450083E970 /* MongoDBMobile+Indexes.swift */,
 				50ADFF8B201F53D600D50D53 /* Plugin.h */,
 				50ADFFA72020EE4F00D50D53 /* Plugin.m */,
 				50ADFF8C201F53D600D50D53 /* Info.plist */,
@@ -375,10 +378,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				79B9D87022B06C130083E970 /* OptionParser.swift in Sources */,
-				50E1A94820377CB70090CE1A /* Plugin.swift in Sources */,
-				79B9D87422B09D2A0083E970 /* Plugin+Write.swift in Sources */,
-				79B9D87222B09CDD0083E970 /* Plugin+Read.swift in Sources */,
+				50E1A94820377CB70090CE1A /* MongoDBMobile.swift in Sources */,
+				79B9D87422B09D2A0083E970 /* MongoDBMobile+Write.swift in Sources */,
+				79B9D87222B09CDD0083E970 /* MongoDBMobile+Read.swift in Sources */,
 				50ADFFA82020EE4F00D50D53 /* Plugin.m in Sources */,
+				79B9D87622B0CD450083E970 /* MongoDBMobile+Indexes.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
