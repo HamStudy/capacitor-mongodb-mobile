@@ -114,8 +114,8 @@ extension MongoDBMobile {
             guard let collectionName = call.getString("collection") else {
                 throw UserError.invalidArgumentError(message: "collection name must be provided and must be a string")
             }
-            guard let query = try OptionsParser.getDocument(call.getObject("query"), "query") else {
-                throw UserError.invalidArgumentError(message: "query must be provided and must be an object")
+            guard let filter = try OptionsParser.getDocument(call.getObject("filter"), "filter") else {
+                throw UserError.invalidArgumentError(message: "filter must be provided and must be an object")
             }
             guard let doc = try OptionsParser.getDocument(call.getObject("doc"), "doc") else {
                 throw UserError.invalidArgumentError(message: "doc must be provided and must be a Document object")
@@ -125,7 +125,7 @@ extension MongoDBMobile {
             let db = mongoClient!.db(dbName)
             let collection = db.collection(collectionName)
             
-            let replaceResult = try collection.replaceOne(filter: query, replacement: doc, options: replaceOneOpts)
+            let replaceResult = try collection.replaceOne(filter: filter, replacement: doc, options: replaceOneOpts)
             var res: PluginResultData = [
                 "success": true,
                 "matchedCount": -1,
@@ -160,8 +160,8 @@ extension MongoDBMobile {
             guard let collectionName = call.getString("collection") else {
                 throw UserError.invalidArgumentError(message: "collection name must be provided and must be a string")
             }
-            guard let query = try OptionsParser.getDocument(call.getObject("query"), "query") else {
-                throw UserError.invalidArgumentError(message: "query must be provided and must be an object")
+            guard let filter = try OptionsParser.getDocument(call.getObject("filter"), "filter") else {
+                throw UserError.invalidArgumentError(message: "filter must be provided and must be an object")
             }
             guard let update = try OptionsParser.getDocument(call.getObject("update"), "update") else {
                 throw UserError.invalidArgumentError(message: "doc must be provided and must be a Document object")
@@ -171,7 +171,7 @@ extension MongoDBMobile {
             let db = mongoClient!.db(dbName)
             let collection = db.collection(collectionName)
             
-            let updateResult = try collection.updateOne(filter: query, update: update, options: updateOneOpts)
+            let updateResult = try collection.updateOne(filter: filter, update: update, options: updateOneOpts)
             var res: PluginResultData = [
                 "success": true,
                 "matchedCount": -1,
@@ -204,8 +204,8 @@ extension MongoDBMobile {
             guard let collectionName = call.getString("collection") else {
                 throw UserError.invalidArgumentError(message: "collection name must be provided and must be a string")
             }
-            guard let query = try OptionsParser.getDocument(call.getObject("query"), "query") else {
-                throw UserError.invalidArgumentError(message: "query must be provided and must be an object")
+            guard let filter = try OptionsParser.getDocument(call.getObject("filter"), "filter") else {
+                throw UserError.invalidArgumentError(message: "filter must be provided and must be an object")
             }
             guard let update = try OptionsParser.getDocument(call.getObject("update"), "update") else {
                 throw UserError.invalidArgumentError(message: "doc must be provided and must be a Document object")
@@ -215,7 +215,7 @@ extension MongoDBMobile {
             let db = mongoClient!.db(dbName)
             let collection = db.collection(collectionName)
             
-            let updateResult = try collection.updateMany(filter: query, update: update, options: updateOpts)
+            let updateResult = try collection.updateMany(filter: filter, update: update, options: updateOpts)
             var res: PluginResultData = [
                 "success": true,
                 "matchedCount": -1,
@@ -247,15 +247,15 @@ extension MongoDBMobile {
             guard let collectionName = call.getString("collection") else {
                 throw UserError.invalidArgumentError(message: "collection name must be provided and must be a string")
             }
-            guard let query = try OptionsParser.getDocument(call.getObject("query"), "query") else {
-                throw UserError.invalidArgumentError(message: "query must be provided and must be an object")
+            guard let filter = try OptionsParser.getDocument(call.getObject("filter"), "filter") else {
+                throw UserError.invalidArgumentError(message: "filter must be provided and must be an object")
             }
             let deleteOpts = try OptionsParser.getDeleteOptions(call.getObject("options"))
             
             let db = mongoClient!.db(dbName)
             let collection = db.collection(collectionName)
             
-            let deleteResult = try collection.deleteOne(query, options: deleteOpts)
+            let deleteResult = try collection.deleteOne(filter, options: deleteOpts)
             if (deleteResult == nil) {
                 let res: PluginResultData = [
                     "success": true,
@@ -283,15 +283,15 @@ extension MongoDBMobile {
             guard let collectionName = call.getString("collection") else {
                 throw UserError.invalidArgumentError(message: "collection name must be provided and must be a string")
             }
-            guard let query = try OptionsParser.getDocument(call.getObject("query"), "query") else {
-                throw UserError.invalidArgumentError(message: "query must be provided and must be an object")
+            guard let filter = try OptionsParser.getDocument(call.getObject("filter"), "filter") else {
+                throw UserError.invalidArgumentError(message: "filter must be provided and must be an object")
             }
             let deleteOpts = try OptionsParser.getDeleteOptions(call.getObject("options"))
             
             let db = mongoClient!.db(dbName)
             let collection = db.collection(collectionName)
             
-            let deleteResult = try collection.deleteMany(query, options: deleteOpts)
+            let deleteResult = try collection.deleteMany(filter, options: deleteOpts)
             if (deleteResult == nil) {
                 let res: PluginResultData = [
                     "success": true,

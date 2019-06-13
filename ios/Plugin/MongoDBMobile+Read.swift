@@ -29,20 +29,6 @@ extension MongoDBMobile {
         call.resolve(["results": resultsJson])
     }
     
-    @objc func listDatabases(_ call: CAPPluginCall) {
-        do {
-            let dbListCursor = try mongoClient!.listDatabases()
-            
-            var resultsJson: [Any] = []
-            for doc in dbListCursor {
-                resultsJson.append(convertToDictionary(text: doc.extendedJSON)!)
-            }
-            call.resolve(["databases": resultsJson])
-        } catch {
-            handleError(call, "Could not list databases!")
-        }
-    }
-    
     @objc func count(_ call: CAPPluginCall) {
         do {
             guard let dbName = call.getString("db") else {
@@ -51,16 +37,16 @@ extension MongoDBMobile {
             guard let collectionName = call.getString("collection") else {
                 throw UserError.invalidArgumentError(message: "collection name must be provided and must be a string")
             }
-            guard let query = call.getObject("query") else {
-                throw UserError.invalidArgumentError(message: "query must be provided and must be an object")
+            guard let filter = call.getObject("filter") else {
+                throw UserError.invalidArgumentError(message: "filter must be provided and must be an object")
             }
             let countOpts = try OptionsParser.getCountOptions(call.getObject("options"))
-            let queryDoc = try OptionsParser.getDocument(query, "query")
+            let filterDoc = try OptionsParser.getDocument(filter, "query")
             
             let db = mongoClient!.db(dbName)
             let collection = db.collection(collectionName)
             
-            let count = try collection.count(queryDoc!, options: countOpts)
+            let count = try collection.count(filterDoc!, options: countOpts)
             
             call.resolve([
                 "count": count
@@ -80,14 +66,14 @@ extension MongoDBMobile {
         guard let collectionName = call.getString("collection") else {
             throw UserError.invalidArgumentError(message: "collection name must be provided and must be a string")
         }
-        guard let query = call.getObject("query") else {
-            throw UserError.invalidArgumentError(message: "query must be provided and must be an object")
+        guard let filter = call.getObject("filter") else {
+            throw UserError.invalidArgumentError(message: "filter must be provided and must be an object")
         }
         let findOpts = try OptionsParser.getFindOptions(call.getObject("options"))
-        let queryDoc = try OptionsParser.getDocument(query, "query")
+        let filterDoc = try OptionsParser.getDocument(filter, "filter")
         let db = mongoClient!.db(dbName)
         let collection = db.collection(collectionName)
-        let cursor = try collection.find(queryDoc!, options: findOpts)
+        let cursor = try collection.find(filterDoc!, options: findOpts)
         
         return cursor
     }
@@ -105,9 +91,9 @@ extension MongoDBMobile {
         let aggOpts = try OptionsParser.getAggregateOptions(call.getObject("options"))
         let db = mongoClient!.db(dbName)
         let collection = db.collection(collectionName)
-        let resultsDocuments = try collection.aggregate(pipeline, options: aggOpts)
+        let cursor = try collection.aggregate(pipeline, options: aggOpts)
         
-        return resultsDocuments
+        return cursor
     }
     
     @objc func find(_ call: CAPPluginCall) {
