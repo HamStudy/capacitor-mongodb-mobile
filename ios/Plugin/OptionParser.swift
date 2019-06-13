@@ -12,6 +12,29 @@ import MongoSwift
 
 let InvalidArgErrorPrefix = "Invalid type for variable "
 
+struct ReplaceOneModelOpts {
+    public let collation: Document?
+    public let upsert: Bool?
+    
+    init(collation: Document?, upsert: Bool?) {
+        self.collation = collation
+        self.upsert = upsert
+    }
+}
+struct UpdateModelOpts {
+    public let arrayFilters: [Document]?
+    public let collation: Document?
+    public let upsert: Bool?
+    
+    init(arrayFilters: [Document]?,
+         collation: Document?,
+         upsert: Bool?) {
+        self.arrayFilters = arrayFilters
+        self.collation = collation
+        self.upsert = upsert
+    }
+}
+
 public class OptionsParser {
     static func getBool(_ obj: Any?, _ name: String) throws -> Bool? {
         if obj == nil {
@@ -428,6 +451,35 @@ public class OptionsParser {
                                        upsert: upsert,
                                        writeConcern: writeConcern
         )
+    }
+    
+    static func getBulkWriteOptions(_ obj: [String: Any]?) throws -> BulkWriteOptions? {
+        let bypassDocumentValidation = try getBool(obj!["bypassDocumentValidation"], "bypassDocumentValidation")
+        let ordered = try getBool(obj!["ordered"], "ordered")
+        let writeConcern = try getWriteConcern(obj!["writeConcern"], "writeConcern")
+        return BulkWriteOptions(bypassDocumentValidation: bypassDocumentValidation,
+                                ordered: ordered,
+                                writeConcern: writeConcern)
+    }
+    
+    static func getDeleteModelOption(_ obj: [String: Any]?) throws -> Document? {
+        let collation = try getDocument(obj!["collation"], "collation")
+        return collation
+    }
+    
+    static func getReplaceOneModelOptions(_ obj: [String: Any]?) throws -> ReplaceOneModelOpts? {
+        let collation = try getDocument(obj!["collation"], "collation")
+        let upsert = try getBool(obj!["upsert"], "upsert")
+        
+        return ReplaceOneModelOpts(collation: collation, upsert: upsert)
+    }
+    
+    static func getUpdateModelOptions(_ obj: [String: Any]?) throws -> UpdateModelOpts? {
+        let arrayFilters = try getDocumentArray(obj!["arrayFilters"], "arrayFilters")
+        let collation = try getDocument(obj!["collation"], "collation")
+        let upsert = try getBool(obj!["upsert"], "upsert")
+        
+        return UpdateModelOpts(arrayFilters: arrayFilters, collation: collation, upsert: upsert)
     }
     
 //    static func getFindAndModifyOptions(_ obj: [String: Any]?) throws -> FindAndModifyOptions? {

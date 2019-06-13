@@ -26,7 +26,15 @@ CAP_PLUGIN(MongoDBMobile, "MongoDBMobile",
            CAP_PLUGIN_METHOD(findOneAndReplace, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(findOneAndUpdate, CAPPluginReturnPromise);
 
-           
+           CAP_PLUGIN_METHOD(newBulkWrite, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(bulkWriteAddDeleteOne, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(bulkWriteAddDeleteMany, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(bulkWriteAddInsertOne, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(bulkWriteAddReplaceOne, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(bulkWriteAddUpdateOne, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(bulkWriteAddUpdateMany, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(bulkWriteExecute, CAPPluginReturnPromise);
+
            CAP_PLUGIN_METHOD(dropIndex, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(createIndexes, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(listIndexes, CAPPluginReturnPromise);

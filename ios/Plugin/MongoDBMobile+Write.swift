@@ -3,7 +3,6 @@
 //  Plugin
 //
 //  Created by Richard Bateman on 6/11/19.
-//  Copyright © 2019 Max Lynch. All rights reserved.
 //
 
 import Foundation
@@ -55,18 +54,14 @@ extension MongoDBMobile {
             let collection = db.collection(collectionName)
             
             let insertResult = try collection.insertOne(doc, options: insertOneOpts)
-            if (insertResult == nil) {
-                call.resolve([
-                    "success": true,
-                    "insertedId": nil
-                    ])
-                return
+            var data: PluginResultData = [:]
+            data["success"] = true
+            data["insertedId"] = nil
+            if (insertResult != nil) {
+                data["insertedId"] = bsonToJsValue(insertResult!.insertedId)
             }
             
-            call.resolve([
-                "success": true,
-                "insertedId": bsonToJsValue(insertResult!.insertedId) as Any
-                ])
+            call.resolve(data)
         } catch UserError.invalidArgumentError(let message) {
             handleError(call, message)
         } catch {
@@ -131,25 +126,26 @@ extension MongoDBMobile {
             let collection = db.collection(collectionName)
             
             let replaceResult = try collection.replaceOne(filter: query, replacement: doc, options: replaceOneOpts)
-            if (replaceResult == nil) {
-                let res: PluginResultData = [
-                    "success": true,
-                    "matchedCount": -1,
-                    "modifiedCount": -1,
-                    "upsertedId": "null",
-                    "upsertedCount": -1
-                ]
+            var res: PluginResultData = [
+                "success": true,
+                "matchedCount": -1,
+                "modifiedCount": -1,
+                "upsertedCount": -1
+            ]
+            res["upsertedId"] = nil
+            
+            if (replaceResult != nil) {
+                res["matchedCount"] = replaceResult!.matchedCount
+                res["modifiedCount"] = replaceResult!.modifiedCount
+                res["upsertedCount"] = replaceResult!.upsertedCount
+                if (replaceResult!.upsertedId != nil) {
+                    res["upsertedId"] = bsonToJsValue(replaceResult!.upsertedId!.value)
+                }
                 call.resolve(res)
                 return
             }
             
-            call.resolve([
-                "success": true,
-                "matchedCount": replaceResult!.matchedCount,
-                "modifiedCount": replaceResult!.modifiedCount,
-                "upsertedId": replaceResult!.upsertedId != nil ? bsonToJsValue(replaceResult!.upsertedId!.value) : "null",
-                "upsertedCount": replaceResult!.upsertedCount
-            ])
+            call.resolve(res)
         } catch UserError.invalidArgumentError(let message) {
             handleError(call, message)
         } catch {
@@ -176,25 +172,24 @@ extension MongoDBMobile {
             let collection = db.collection(collectionName)
             
             let updateResult = try collection.updateOne(filter: query, update: update, options: updateOneOpts)
-            if (updateResult == nil) {
-                let res: PluginResultData = [
-                    "success": true,
-                    "matchedCount": -1,
-                    "modifiedCount": -1,
-                    "upsertedId": "null",
-                    "upsertedCount": -1
-                ]
-                call.resolve(res)
-                return
-            }
-            
-            call.resolve([
+            var res: PluginResultData = [
                 "success": true,
-                "matchedCount": updateResult!.matchedCount,
-                "modifiedCount": updateResult!.modifiedCount,
-                "upsertedId": updateResult!.upsertedId != nil ? bsonToJsValue(updateResult!.upsertedId!.value) : "null",
-                "upsertedCount": updateResult!.upsertedCount
-                ])
+                "matchedCount": -1,
+                "modifiedCount": -1,
+                "upsertedCount": -1
+            ]
+            res["upsertedId"] = nil
+            if (updateResult != nil) {
+                res["matchedCount"] = updateResult!.matchedCount
+                res["modifiedCount"] = updateResult!.modifiedCount
+                res["upsertedCount"] = updateResult!.upsertedCount
+                if (updateResult!.upsertedId != nil) {
+                    res["upsertedId"] = bsonToJsValue(updateResult!.upsertedId!.value)
+                }
+            }
+
+            call.resolve(res)
+
         } catch UserError.invalidArgumentError(let message) {
             handleError(call, message)
         } catch {
@@ -221,25 +216,23 @@ extension MongoDBMobile {
             let collection = db.collection(collectionName)
             
             let updateResult = try collection.updateMany(filter: query, update: update, options: updateOpts)
-            if (updateResult == nil) {
-                let res: PluginResultData = [
-                    "success": true,
-                    "matchedCount": -1,
-                    "modifiedCount": -1,
-                    "upsertedId": "null",
-                    "upsertedCount": -1
-                ]
-                call.resolve(res)
-                return
-            }
-            
-            call.resolve([
+            var res: PluginResultData = [
                 "success": true,
-                "matchedCount": updateResult!.matchedCount,
-                "modifiedCount": updateResult!.modifiedCount,
-                "upsertedId": updateResult!.upsertedId != nil ? bsonToJsValue(updateResult!.upsertedId!.value) : "null",
-                "upsertedCount": updateResult!.upsertedCount
-                ])
+                "matchedCount": -1,
+                "modifiedCount": -1,
+                "upsertedCount": -1
+            ]
+            res["upsertedId"] = nil
+            if (updateResult != nil) {
+                res["matchedCount"] = updateResult!.matchedCount
+                res["modifiedCount"] = updateResult!.modifiedCount
+                res["upsertedCount"] = updateResult!.upsertedCount
+                if (updateResult!.upsertedId != nil) {
+                    res["upsertedId"] = bsonToJsValue(updateResult!.upsertedId!.value)
+                }
+            }
+            call.resolve(res)
+            
         } catch UserError.invalidArgumentError(let message) {
             handleError(call, message)
         } catch {

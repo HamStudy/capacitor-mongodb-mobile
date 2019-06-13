@@ -15,7 +15,8 @@ public class MongoDBMobile: CAPPlugin {
     var mongoClient: MongoClient?;
     
     var cursorMap: [UUID: MongoCursor<Document>] = [:]
-    
+    var bulkOperations: [UUID: BulkWriteBatch] = [:]
+
     public override init() {
         var bundleId = ""
         if (bundleIdentifier != nil) {
