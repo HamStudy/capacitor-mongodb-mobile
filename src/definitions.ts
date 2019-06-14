@@ -4,7 +4,7 @@ declare module "@capacitor/core" {
   }
 }
 
-declare namespace MongoDBMobile {
+export namespace MongoMobileTypes {
     export interface Document {
         _id: string;
     }
@@ -29,11 +29,11 @@ declare namespace MongoDBMobile {
     }
     export interface WriteConcern {
         /** True if it needs to write to the journal before returning */
-        j: boolean;
+        j?: boolean;
         /** how many nodes it must write to; in practice this should always be 0 or 1 in mongodb mobile */
-        w: 0 | 1; // number
+        w?: number | 'majority' | string; // number
         /** Timeout in milliseconds after which the operation will return with an error */
-        wtimeout: number;
+        wtimeout?: number;
     }
     export interface FindOptions {
         allowPartialResults?: boolean;
@@ -43,15 +43,8 @@ declare namespace MongoDBMobile {
         cursorType?: CursorType;
         hint?: IndexHint;
         limit?: number;
-        /**
-         * I don't actually know what this is for
-         */
         max?: any;
-        /**
-         * I don't actually know what this is for
-         */
         min?: any;
-
         maxScan?: number;
         maxTimeMS?: number;
         noCursorTimeout?: boolean;
@@ -185,40 +178,74 @@ declare namespace MongoDBMobile {
     }
     export type DropIndexOptions = CreateIndexOptions;
 
+    export interface CollectionCreateOptions {
+      // raw?: boolean;
+      // pkFactory?: object;
+      // serializeFunctions?: boolean;
+      // strict?: boolean;
+      capped?: boolean;
+      autoIndexId?: boolean;
+      size?: number;
+      max?: number;
+      flags?: number;
+      storageEngine?: object;
+      validator?: object;
+      validationLevel?: "off" | "strict" | "moderate";
+      validationAction?: "error" | "warn";
+      indexOptionDefaults?: object;
+      viewOn?: string;
+      pipeline?: any[];
+      collation?: MongoMobileTypes.Collation;
+      writeConcern?: WriteConcern | number;
+    }
+
     export type PipelineStage<T extends Object> = T;
 }
 
 export interface MongoDBMobilePlugin {
   initWithId(options: {appID: string}): Promise<void>;
-  listDatabases(): Promise<MongoDBMobile.TypedDocument<any>[]>;
+  listDatabases(): Promise<{name: string}[]>;
+  listCollections(options: {db: string}): Promise<{name: string}[]>;
+  createCollection(options: MongoMobileTypes.DatabaseDef & {
+    options?: MongoMobileTypes.CollectionCreateOptions,
+  }): Promise<{collection: string}>;
+  runCommand(options: {
+    db: string,
+    command: any,
+    options?: {
+      writeConcern: MongoMobileTypes.WriteConcern | number
+    }
+  }): Promise<{reply: any}>;
+  dropDatabase(options: {db: string}): Promise<{dropped: boolean}>;
+  dropCollection(options: {db: string, collection: string}): Promise<{dropped: boolean}>;
 
   /***********************\
    * Query / Read methods
   \***********************/ 
-  count(options: MongoDBMobile.DatabaseDef & {
-    filter: any, options?: MongoDBMobile.CountOptions
+  count(options: MongoMobileTypes.DatabaseDef & {
+    filter: any, options?: MongoMobileTypes.CountOptions
   }): Promise<{count: number}>;
-  find<T extends MongoDBMobile.Document>(options: MongoDBMobile.DatabaseDef & {
+  find<T extends MongoMobileTypes.Document>(options: MongoMobileTypes.DatabaseDef & {
       cursor?: false,
       filter: any,
-      options?: MongoDBMobile.FindOptions,
+      options?: MongoMobileTypes.FindOptions,
   }) : Promise<{results: T[]}>;
-  find(options: MongoDBMobile.DatabaseDef & {
+  find(options: MongoMobileTypes.DatabaseDef & {
       cursor: true,
       filter: any,
-      options?: MongoDBMobile.FindOptions
+      options?: MongoMobileTypes.FindOptions
   }) : Promise<{cursorId: string}>;
-  aggregate<T extends MongoDBMobile.Document>(options: MongoDBMobile.DatabaseDef & {
+  aggregate<T extends MongoMobileTypes.Document>(options: MongoMobileTypes.DatabaseDef & {
     cursor?: false,
-    pipeline: MongoDBMobile.PipelineStage<{}>[],
-    options?: MongoDBMobile.AggregateOptions,
+    pipeline: MongoMobileTypes.PipelineStage<{}>[],
+    options?: MongoMobileTypes.AggregateOptions,
   }) : Promise<{results: T[]}>;
-  aggregate(options: MongoDBMobile.DatabaseDef & {
+  aggregate(options: MongoMobileTypes.DatabaseDef & {
     cursor: true,
     filter: any,
-    options?: MongoDBMobile.AggregateOptions
+    options?: MongoMobileTypes.AggregateOptions
   }) : Promise<{cursorId: string}>;
-  cursorGetNext<T extends MongoDBMobile.Document>(options: {
+  cursorGetNext<T extends MongoMobileTypes.Document>(options: {
     cursorId: string,
     batchSize?: number,
   }) : Promise<{results: T[], complete?: true}>;
@@ -229,35 +256,35 @@ export interface MongoDBMobilePlugin {
   /**********************\
    * Basic write methods
   \**********************/ 
-  insertOne<T extends object>(options: MongoDBMobile.DatabaseDef & {
-    options?: MongoDBMobile.InsertOneOptions,
+  insertOne<T extends object>(options: MongoMobileTypes.DatabaseDef & {
+    options?: MongoMobileTypes.InsertOneOptions,
     doc: T,
   }) : Promise<{success: true, insertedId?: string}>;
-  insertMany<T extends object>(options: MongoDBMobile.DatabaseDef & {
-    options?: MongoDBMobile.InsertManyOptions,
+  insertMany<T extends object>(options: MongoMobileTypes.DatabaseDef & {
+    options?: MongoMobileTypes.InsertManyOptions,
     docs: T[],
   }) : Promise<{success: true, insertedIds?: string[], insertedCount: number}>;
-  replaceOne<T extends object>(options: MongoDBMobile.DatabaseDef & {
-    options?: MongoDBMobile.ReplaceOptions,
+  replaceOne<T extends object>(options: MongoMobileTypes.DatabaseDef & {
+    options?: MongoMobileTypes.ReplaceOptions,
     filter: any,
     doc: T,
   }) : Promise<{success: true, upsertedId?: string, matchedCount: number, modifiedCount: number, upsertedCount: number}>;
-  updateOne(options: MongoDBMobile.DatabaseDef & {
-    options?: MongoDBMobile.UpdateOptions,
+  updateOne(options: MongoMobileTypes.DatabaseDef & {
+    options?: MongoMobileTypes.UpdateOptions,
     filter: any,
     update: any,
-  }) : Promise<MongoDBMobile.UpdateResult>;
-  updateMany(options: MongoDBMobile.DatabaseDef & {
-    options?: MongoDBMobile.UpdateOptions,
+  }) : Promise<MongoMobileTypes.UpdateResult>;
+  updateMany(options: MongoMobileTypes.DatabaseDef & {
+    options?: MongoMobileTypes.UpdateOptions,
     filter: any,
     update: any,
-  }) : Promise<MongoDBMobile.UpdateResult>;
-  deleteOne(options: MongoDBMobile.DatabaseDef & {
-    options?: MongoDBMobile.DeleteOptions,
+  }) : Promise<MongoMobileTypes.UpdateResult>;
+  deleteOne(options: MongoMobileTypes.DatabaseDef & {
+    options?: MongoMobileTypes.DeleteOptions,
     filter: any,
   }) : Promise<{success: true, deletedCount?: number}>;
-  deleteMany(options: MongoDBMobile.DatabaseDef & {
-    options?: MongoDBMobile.DeleteOptions,
+  deleteMany(options: MongoMobileTypes.DatabaseDef & {
+    options?: MongoMobileTypes.DeleteOptions,
     filter: any,
   }) : Promise<{success: true, deletedCount?: number}>;
 
@@ -265,17 +292,17 @@ export interface MongoDBMobilePlugin {
   /************************\
    * FindAndModify methods
   \************************/ 
-  findOneAndDelete<T extends MongoDBMobile.Document>(options: MongoDBMobile.DatabaseDef & {
-    options?: MongoDBMobile.FindOneAndDeleteOptions,
+  findOneAndDelete<T extends MongoMobileTypes.Document>(options: MongoMobileTypes.DatabaseDef & {
+    options?: MongoMobileTypes.FindOneAndDeleteOptions,
     filter: any,
   }) : Promise<{doc: T}>;
-  findOneAndReplace<T extends MongoDBMobile.Document>(options: MongoDBMobile.DatabaseDef & {
-    options?: MongoDBMobile.FindOneAndReplaceOptions,
+  findOneAndReplace<T extends MongoMobileTypes.Document>(options: MongoMobileTypes.DatabaseDef & {
+    options?: MongoMobileTypes.FindOneAndReplaceOptions,
     filter: any,
     replacement: T,
   }) : Promise<{doc: T}>;
-  findOneAndUpdate<T extends MongoDBMobile.Document>(options: MongoDBMobile.DatabaseDef & {
-    options?: MongoDBMobile.FindOneAndUpdateOptions,
+  findOneAndUpdate<T extends MongoMobileTypes.Document>(options: MongoMobileTypes.DatabaseDef & {
+    options?: MongoMobileTypes.FindOneAndUpdateOptions,
     filter: any,
     update: any,
   }) : Promise<{doc: T}>;
@@ -284,23 +311,23 @@ export interface MongoDBMobilePlugin {
   /*********************\
    * Bulk Write methods
   \*********************/
-  newBulkWrite(options: MongoDBMobile.DatabaseDef & {
-    options?: MongoDBMobile.FindOneAndUpdateOptions,
+  newBulkWrite(options: MongoMobileTypes.DatabaseDef & {
+    options?: MongoMobileTypes.FindOneAndUpdateOptions,
   }) : Promise<{operationId: string}>;
   bulkWriteAddDeleteOne(options: {
     operationId: string,
     filter: any,
-    options?: MongoDBMobile.DeleteModelOptions,
+    options?: MongoMobileTypes.DeleteModelOptions,
   }) : Promise<{operationId: string}>;
   bulkWriteAddDeleteMany(options: {
     operationId: string,
     filter: any,
-    options?: MongoDBMobile.DeleteModelOptions,
+    options?: MongoMobileTypes.DeleteModelOptions,
   }) : Promise<{success: true}>;
   bulkWriteAddDeleteMany(options: {
     operationId: string,
     filter: any,
-    options?: MongoDBMobile.DeleteModelOptions,
+    options?: MongoMobileTypes.DeleteModelOptions,
   }) : Promise<{success: true}>;
   bulkWriteAddInsertOne<T extends object>(options: {
     operationId: string,
@@ -310,24 +337,24 @@ export interface MongoDBMobilePlugin {
     operationId: string,
     filter: any,
     replacement: T,
-    options?: MongoDBMobile.ReplaceOneModelOptions,
+    options?: MongoMobileTypes.ReplaceOneModelOptions,
   }) : Promise<{success: true}>;
   bulkWriteAddUpdateOne(options: {
     operationId: string,
     filter: any,
     update: any,
-    options?: MongoDBMobile.UpdateModelOptions,
+    options?: MongoMobileTypes.UpdateModelOptions,
   }) : Promise<{success: true}>;
   bulkWriteAddUpdateMany(options: {
     operationId: string,
     filter: any,
     update: any,
-    options?: MongoDBMobile.UpdateModelOptions,
+    options?: MongoMobileTypes.UpdateModelOptions,
   }) : Promise<{success: true}>;
   bulkWriteCancel(options: {
     operationId: string,
   }) : Promise<{removed: boolean}>;
   bulkWriteExecute(options: {
     operationId: string,
-  }) : Promise<MongoDBMobile.BulkWriteResult>;
+  }) : Promise<MongoMobileTypes.BulkWriteResult>;
 }

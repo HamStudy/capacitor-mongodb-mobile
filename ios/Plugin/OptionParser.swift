@@ -482,6 +482,51 @@ public class OptionsParser {
         return UpdateModelOpts(arrayFilters: arrayFilters, collation: collation, upsert: upsert)
     }
     
+    static func getRunCommandOptions(_ obj: [String: Any]?) throws -> RunCommandOptions? {
+        let writeConcern = try getWriteConcern(obj!["writeConcern"], "writeConcern")
+        
+        return RunCommandOptions(readConcern: nil,
+                                 readPreference: nil,
+                                 session: nil,
+                                 writeConcern: writeConcern)
+    }
+    
+    static func getCreateCollectionOptions(_ obj: [String: Any]?) throws -> CreateCollectionOptions? {
+        let capped = try getBool(obj!["capped"], "capped")
+        let autoIndexId = try getBool(obj!["autoIndexId"], "autoIndexId")
+        let size = try getInt64(obj!["size"], "size")
+        let max = try getInt64(obj!["max"], "max")
+        let storageEngine = try getDocument(obj!["storageEngine"], "storageEngine")
+        let validator = try getDocument(obj!["validator"], "validator")
+        let validationLevel = try getString(obj!["validationLevel"], "validationLevel")
+        let validationAction = try getString(obj!["validationAction"], "validationAction")
+        let indexOptionDefaults = try getDocument(obj!["indexOptionDefaults"], "indexOptionDefaults")
+        let viewOn = try getString(obj!["viewOn"], "viewOn")
+        let collation = try getDocument(obj!["collation"], "collation")
+        let writeConcern = try getWriteConcern(obj!["writeConcern"], "writeConcern")
+        let dateCodingStrategy: DateCodingStrategy? = nil //try getBool(obj!["dateCodingStrategy"], "dateCodingStrategy")
+        let uuidCodingStrategy: UUIDCodingStrategy? = nil //try getBool(obj!["uuidCodingStrategy"], "uuidCodingStrategy")
+        let dataCodingStrategy: DataCodingStrategy? = nil //try getBool(obj!["dataCodingStrategy"], "dataCodingStrategy")
+        
+        return CreateCollectionOptions(autoIndexId: autoIndexId,
+                                       capped: capped,
+                                       collation: collation,
+                                       indexOptionDefaults: indexOptionDefaults,
+                                       max: max,
+                                       session: nil,
+                                       size: size,
+                                       storageEngine: storageEngine,
+                                       validationAction: validationAction,
+                                       validationLevel: validationLevel,
+                                       validator: validator,
+                                       viewOn: viewOn,
+                                       writeConcern: writeConcern,
+                                       dateCodingStrategy: dateCodingStrategy,
+                                       uuidCodingStrategy: uuidCodingStrategy,
+                                       dataCodingStrategy: dataCodingStrategy
+        )
+    }
+    
 //    static func getFindAndModifyOptions(_ obj: [String: Any]?) throws -> FindAndModifyOptions? {
 //        let arrayFilters = try getDocumentArray(obj!["arrayFilters"], "arrayFilters")
 //        let bypassDocumentValidation = try getBool(obj!["bypassDocumentValidation"], "bypassDocumentValidation")

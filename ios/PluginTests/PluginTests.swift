@@ -19,7 +19,7 @@ class PluginTests: XCTestCase {
         // Use XCTAssert and related functions to verify your tests produce the correct results.
         
         let value = "Hello, World!"
-        let plugin = MyPlugin()
+//        let plugin = MyPlugin()
         
         let call = CAPPluginCall(callbackId: "test", options: [
             "value": value
@@ -30,6 +30,6 @@ class PluginTests: XCTestCase {
             XCTFail("Error shouldn't have been called")
         })
         
-        plugin.echo(call!)
+//        plugin.echo(call!)
     }
 }

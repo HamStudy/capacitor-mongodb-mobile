@@ -47,20 +47,6 @@ public class MongoDBMobile: CAPPlugin {
         } catch {
         }
     }
-    
-    @objc func listDatabases(_ call: CAPPluginCall) {
-        do {
-            let dbListCursor = try mongoClient!.listDatabases()
-            
-            var resultsJson: [Any] = []
-            for doc in dbListCursor {
-                resultsJson.append(convertToDictionary(text: doc.extendedJSON)!)
-            }
-            call.resolve(["databases": resultsJson])
-        } catch {
-            handleError(call, "Could not list databases!")
-        }
-    }
 
     /**
      * Helper for handling errors

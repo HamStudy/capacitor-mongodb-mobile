@@ -29,6 +29,7 @@
 		79B9D87622B0CD450083E970 /* MongoDBMobile+Indexes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79B9D87522B0CD450083E970 /* MongoDBMobile+Indexes.swift */; };
 		79B9D87822B1B8110083E970 /* MongoDBMobile+FindAndModify.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79B9D87722B1B8110083E970 /* MongoDBMobile+FindAndModify.swift */; };
 		79B9D87A22B1E0570083E970 /* MongoDBMobile+BulkWrite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79B9D87922B1E0570083E970 /* MongoDBMobile+BulkWrite.swift */; };
+		79B9D87C22B326610083E970 /* MongoDBMobile+Database.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79B9D87B22B326610083E970 /* MongoDBMobile+Database.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -67,6 +68,7 @@
 		79B9D87522B0CD450083E970 /* MongoDBMobile+Indexes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MongoDBMobile+Indexes.swift"; sourceTree = "<group>"; };
 		79B9D87722B1B8110083E970 /* MongoDBMobile+FindAndModify.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MongoDBMobile+FindAndModify.swift"; sourceTree = "<group>"; };
 		79B9D87922B1E0570083E970 /* MongoDBMobile+BulkWrite.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MongoDBMobile+BulkWrite.swift"; sourceTree = "<group>"; };
+		79B9D87B22B326610083E970 /* MongoDBMobile+Database.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MongoDBMobile+Database.swift"; sourceTree = "<group>"; };
 		91781294A431A2A7CC6EB714 /* Pods-Plugin.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Plugin.release.xcconfig"; path = "Pods/Target Support Files/Pods-Plugin/Pods-Plugin.release.xcconfig"; sourceTree = "<group>"; };
 		96ED1B6440D6672E406C8D19 /* Pods-PluginTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PluginTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PluginTests/Pods-PluginTests.debug.xcconfig"; sourceTree = "<group>"; };
 		F65BB2953ECE002E1EF3E424 /* Pods-PluginTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PluginTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-PluginTests/Pods-PluginTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -136,6 +138,7 @@
 				50ADFFA72020EE4F00D50D53 /* Plugin.m */,
 				50ADFF8C201F53D600D50D53 /* Info.plist */,
 				79B9D86F22B06C130083E970 /* OptionParser.swift */,
+				79B9D87B22B326610083E970 /* MongoDBMobile+Database.swift */,
 			);
 			path = Plugin;
 			sourceTree = "<group>";
@@ -383,6 +386,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				79B9D87C22B326610083E970 /* MongoDBMobile+Database.swift in Sources */,
 				79B9D87022B06C130083E970 /* OptionParser.swift in Sources */,
 				50E1A94820377CB70090CE1A /* MongoDBMobile.swift in Sources */,
 				79B9D87A22B1E0570083E970 /* MongoDBMobile+BulkWrite.swift in Sources */,
@@ -542,7 +546,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks $(FRAMEWORK_SEARCH_PATHS)\n$(FRAMEWORK_SEARCH_PATHS)\n$(FRAMEWORK_SEARCH_PATHS)";
 				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.getcapacitor.Plugin;
+				PRODUCT_BUNDLE_IDENTIFIER = com.getcapacitor.MongoDBPlugin;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -567,7 +571,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks $(FRAMEWORK_SEARCH_PATHS)";
 				ONLY_ACTIVE_ARCH = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = com.getcapacitor.Plugin;
+				PRODUCT_BUNDLE_IDENTIFIER = com.getcapacitor.MongoDBPlugin;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 4.0;
