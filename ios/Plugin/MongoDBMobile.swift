@@ -66,4 +66,22 @@ public class MongoDBMobile: CAPPlugin {
         }
         return nil
     }
+
+    func returnCursor(_ call: CAPPluginCall, cursor: MongoCursor<Document>) {
+        let cursorId = UUID()
+        
+        cursorMap[cursorId] = cursor
+        
+        call.resolve([
+            "cursorId": cursorId.uuidString
+            ])
+    }
+    func returnDocsFromCursor(_ call: CAPPluginCall, cursor: MongoCursor<Document>) {
+        var resultsJson: [Any] = []
+        for doc in cursor {
+            resultsJson.append(convertToDictionary(text: doc.extendedJSON)!)
+        }
+        call.resolve(["results": resultsJson])
+    }
+    
 }

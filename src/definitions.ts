@@ -5,9 +5,7 @@ declare module "@capacitor/core" {
 }
 
 export namespace MongoMobileTypes {
-    export interface Document {
-        _id: string;
-    }
+    export type Document = Object;
     export type TypedDocument<T> = Document & T;
     export interface DatabaseDef {
         db: string;
@@ -155,7 +153,7 @@ export namespace MongoMobileTypes {
 
     export interface IndexOptions {
         background?: boolean;
-        expireAfter: number;
+        expireAfter?: number;
         name?: string;
         sparse?: boolean;
         storageEngine?: string;
@@ -163,7 +161,7 @@ export namespace MongoMobileTypes {
         version?: number;
         defaultLanguage?: string;
         languageOverride?: string;
-        textVersion: number;
+        textVersion?: number;
         weights?: any;
         sphereVersion?: number;
         bits?: number;
@@ -357,4 +355,23 @@ export interface MongoDBMobilePlugin {
   bulkWriteExecute(options: {
     operationId: string,
   }) : Promise<MongoMobileTypes.BulkWriteResult>;
+
+
+  /***************************\
+   * Index management methods
+  \***************************/ 
+  createIndexes(options: MongoMobileTypes.DatabaseDef & {
+    options?: MongoMobileTypes.CreateIndexOptions,
+    indexes: [any, MongoMobileTypes.IndexOptions][],
+  }) : Promise<{indexesCreated: string[]}>;
+  dropIndex(options: MongoMobileTypes.DatabaseDef & {
+    options?: MongoMobileTypes.DropIndexOptions,
+    name: string,
+  }) : Promise<any>;
+  dropIndex(options: MongoMobileTypes.DatabaseDef & {
+    options?: MongoMobileTypes.DropIndexOptions,
+    keys: object,
+  }) : Promise<any>;
+  listIndexes(options: MongoMobileTypes.DatabaseDef & {
+  }) : Promise<{results: any[]}>;
 }
