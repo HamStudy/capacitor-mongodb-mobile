@@ -1,8 +1,7 @@
-import { Plugins, PluginRegistry } from '@capacitor/core';
+import { Plugins } from '@capacitor/core';
 import { MongoDBMobilePlugin, MongoMobileTypes } from '../definitions';
-import { Db } from './db';
 import { Collection } from './collection';
-import { IteratorCallback, EndCallback } from './commonTypes';
+import { IteratorCallback } from './commonTypes';
 const MongoDBMobile = Plugins.MongoDBMobile as MongoDBMobilePlugin;
 export type CursorResult = object | null | boolean;
 
@@ -15,9 +14,9 @@ export interface CursorCommentOptions {
     hint?: string;
     readPreference?: any; // ignored
 }
-class Cursor<T> {
+class Cursor<T extends Object> {
   private cursorId: string = null;
-  private options: MongoMobileTypes.FindOptions = {};
+  private _asyncTimeoutMs = K_AUTOCLOSE_TIMEOUT;
   private _batchSize: number = 100;
   private _curBatch: T[] = [];
   private _isEnd = false;
@@ -30,7 +29,10 @@ class Cursor<T> {
     if (this.autocloseTimer !== null) {
       clearTimeout(this.autocloseTimer);
     }
-    this.autocloseTimer = setTimeout(() => this.close(), K_AUTOCLOSE_TIMEOUT);
+    this.autocloseTimer = setTimeout(() => this.close(), this._asyncTimeoutMs);
+  }
+  private errorIfClosed() {
+    if (this.isClosed()) { throw new Error("Attempting to access a closed cursor"); }
   }
   private async execute() {
     let cursorStart = await MongoDBMobile.find({
@@ -44,16 +46,11 @@ class Cursor<T> {
     this.resetCloseTimer();
   }
 
-  static fromCursor<U>(cursor: Cursor<U>) {
-    // // let n = new this();
-    // n._batchSize = cursor._batchSize;
-    // return n;
-  }
-  constructor(private collection: Collection, private _filter: any) {
-
+  constructor(private collection: Collection, private _filter: any = {}, private options: MongoMobileTypes.FindOptions = {}) {
   }
   /** http://mongodb.github.io/node-mongodb-native/3.1/api/Cursor.html#batchSize */
   batchSize(value: number): Cursor<T> {
+    this.errorIfClosed();
     if (value < 1) { throw new Error("batchSize must be at least 1"); }
     this._batchSize = value; return this;
   }
@@ -62,6 +59,7 @@ class Cursor<T> {
     let nc = new Cursor<T>(this.collection, this._filter);
     nc.options = this.options;
     nc._batchSize = this._batchSize;
+    nc._asyncTimeoutMs = this._asyncTimeoutMs;
     return nc;
   }
   /** http://mongodb.github.io/node-mongodb-native/3.1/api/Cursor.html#close */
@@ -125,6 +123,7 @@ class Cursor<T> {
   }
   /** http://mongodb.github.io/node-mongodb-native/3.1/api/Cursor.html#forEach */
   async forEach(iterator: IteratorCallback<T>) : Promise<void> {
+    this.errorIfClosed();
     let next: T;
     while (next = await this.next()) {
       iterator(next);
@@ -133,6 +132,7 @@ class Cursor<T> {
   }
   /** http://mongodb.github.io/node-mongodb-native/3.1/api/Cursor.html#hasNext */
   hasNext(): Promise<boolean> {
+    this.errorIfClosed();
     // TODO implement
     throw new Error("Not implemented");
   }
@@ -160,7 +160,8 @@ class Cursor<T> {
   }
   /** http://mongodb.github.io/node-mongodb-native/3.1/api/Cursor.html#maxAwaitTimeMS */
   maxAwaitTimeMS(value: number): Cursor<T> {
-    throw new Error("Not implemented");
+    this._asyncTimeoutMs = value;
+    return this;
   }
   /** http://mongodb.github.io/node-mongodb-native/3.1/api/Cursor.html#maxScan */
   maxScan(maxScan: number): Cursor<T> {
@@ -245,7 +246,8 @@ class Cursor<T> {
   }
   /** http://mongodb.github.io/node-mongodb-native/3.1/api/Cursor.html#sort */
   sort(keyOrList: MongoMobileTypes.IndexFields): Cursor<T> {
-    this.options.sort = keyOrList
+    this.options.sort = keyOrList;
+    return this;
   }
   /** http://mongodb.github.io/node-mongodb-native/3.1/api/Cursor.html#stream */
   stream(options?: { transform?: (document: T) => any }): Cursor<T> {
@@ -253,6 +255,7 @@ class Cursor<T> {
   }
   /** http://mongodb.github.io/node-mongodb-native/3.1/api/Cursor.html#toArray */
   async toArray(): Promise<T[]> {
+    this.errorIfClosed();
     let all: T[] = [];
     let next: T;
     while (next = await this.next()) {
@@ -261,3 +264,5 @@ class Cursor<T> {
     return all;
   }
 }
+
+export {Cursor};

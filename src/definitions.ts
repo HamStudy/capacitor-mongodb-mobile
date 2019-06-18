@@ -59,16 +59,16 @@ export namespace MongoMobileTypes {
         collation?: Collation;
         comment?: string;
         hint?: IndexHint;
+        maxTimeMS?: number;
         limit?: number;
         writeConcern?: WriteConcern | number;
     }
     export interface InsertOneOptions {
         bypassDocumentValidation?: boolean;
-    }
-    export interface InsertManyOptions {
-        bypassDocumentValidation?: boolean;
-        ordered?: boolean;
         writeConcern?: WriteConcern | number;
+    }
+    export interface InsertManyOptions extends InsertOneOptions {
+        ordered?: boolean;
     }
     export interface ReplaceOptions {
         bypassDocumentValidation?: boolean;
@@ -127,7 +127,7 @@ export namespace MongoMobileTypes {
         upsert?: boolean;
     }
     export interface UpdateModelOptions {
-        arrayFilters: any[],
+        arrayFilters?: any[],
         collation?: Collation;
         upsert?: boolean;
     }
@@ -240,8 +240,8 @@ export interface MongoDBMobilePlugin {
   }) : Promise<{results: T[]}>;
   aggregate(options: MongoMobileTypes.DatabaseDef & {
     cursor: true,
-    filter: any,
-    options?: MongoMobileTypes.AggregateOptions
+    pipeline: MongoMobileTypes.PipelineStage<{}>[],
+    options?: MongoMobileTypes.AggregateOptions,
   }) : Promise<{cursorId: string}>;
   cursorGetNext<T extends MongoMobileTypes.Document>(options: {
     cursorId: string,
@@ -310,13 +310,13 @@ export interface MongoDBMobilePlugin {
    * Bulk Write methods
   \*********************/
   newBulkWrite(options: MongoMobileTypes.DatabaseDef & {
-    options?: MongoMobileTypes.FindOneAndUpdateOptions,
+    options?: MongoMobileTypes.BulkWriteOptions,
   }) : Promise<{operationId: string}>;
   bulkWriteAddDeleteOne(options: {
     operationId: string,
     filter: any,
     options?: MongoMobileTypes.DeleteModelOptions,
-  }) : Promise<{operationId: string}>;
+  }) : Promise<{success: true}>;
   bulkWriteAddDeleteMany(options: {
     operationId: string,
     filter: any,
