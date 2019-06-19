@@ -1,6 +1,5 @@
-import { Plugins } from '@capacitor/core';
-import { MongoDBMobilePlugin, MongoMobileTypes } from '../definitions';
-const MongoDBMobile = Plugins.MongoDBMobile as MongoDBMobilePlugin;
+import { MongoMobileTypes } from '../definitions';
+import { getMongoMobilePlugin } from './index';
 
 import { Db } from "./db";
 import { IndexOptions, CommonOptions, CollectionInsertManyOptions, InsertWriteOpResult, CollectionInsertOneOptions, InsertOneWriteOpResult, UpdateQuery, FilterQuery, UpdateManyOptions, UpdateOneOptions, FindOneAndDeleteOption, UpdateWriteOpResult, DeleteWriteOpResultObject, FindAndModifyWriteOpResultObject, FindOneAndReplaceOption, FindOneAndUpdateOption } from './commonTypes';
@@ -28,20 +27,20 @@ function getWriteConcern(options?: CommonOptions) {
 }
 
 export class Collection {
-  private defaultWriteConcern: MongoMobileTypes.WriteConcern = {
+  writeConcern: MongoMobileTypes.WriteConcern = {
     w: 1, j: true
   };
   constructor(public readonly db: Db, public collectionName: string) {
   }
 
   async drop(): Promise<any> {
-    return MongoDBMobile.dropCollection({
+    return getMongoMobilePlugin().dropCollection({
       db: this.db.databaseName,
       collection: this.collectionName,
     });
   }
   async createIndex(name: string, fieldOrSpec: string | object, options?: IndexOptions): Promise<any> {
-    let indexRes = await MongoDBMobile.createIndexes({
+    let indexRes = await getMongoMobilePlugin().createIndexes({
       db: this.db.databaseName,
       collection: this.collectionName,
       indexes: [
@@ -84,7 +83,7 @@ export class Collection {
   }
 
   async dropIndex(indexName: string, options?: CommonOptions & { maxTimeMS?: number }): Promise<any> {
-    let res = await MongoDBMobile.dropIndex({
+    let res = await getMongoMobilePlugin().dropIndex({
       db: this.db.databaseName, collection: this.collectionName,
       name: indexName,
       options: {
@@ -106,7 +105,7 @@ export class Collection {
   async insertMany(docs: any[], options: CollectionInsertManyOptions = {}): Promise<InsertWriteOpResult> {
     let writeConcern = getWriteConcern(options);
 
-    let res = await MongoDBMobile.insertMany({
+    let res = await getMongoMobilePlugin().insertMany({
       db: this.db.databaseName,
       collection: this.collectionName,
       docs: docs,
@@ -129,7 +128,7 @@ export class Collection {
   async insertOne(doc: any, options?: CollectionInsertOneOptions): Promise<InsertOneWriteOpResult> {
     let writeConcern = getWriteConcern(options);
 
-    let res = await MongoDBMobile.insertOne({
+    let res = await getMongoMobilePlugin().insertOne({
       db: this.db.databaseName,
       collection: this.collectionName,
       doc: doc,
@@ -150,7 +149,7 @@ export class Collection {
   async updateMany<D extends object>(filter: FilterQuery<D>, update: UpdateQuery<D> | D, options?: UpdateManyOptions): Promise<UpdateWriteOpResult> {
     let writeConcern = getWriteConcern(options);
 
-    let res = await MongoDBMobile.updateMany({
+    let res = await getMongoMobilePlugin().updateMany({
       db: this.db.databaseName,
       collection: this.collectionName,
       filter: filter,
@@ -180,7 +179,7 @@ export class Collection {
   async updateOne<TSchema extends object>(filter: FilterQuery<TSchema>, update: UpdateQuery<TSchema> | TSchema, options?: UpdateOneOptions): Promise<UpdateWriteOpResult> {
     let writeConcern = getWriteConcern(options);
 
-    let res = await MongoDBMobile.updateOne({
+    let res = await getMongoMobilePlugin().updateOne({
       db: this.db.databaseName,
       collection: this.collectionName,
       filter: filter,
@@ -210,7 +209,7 @@ export class Collection {
   async deleteMany<TSchema extends object>(filter: FilterQuery<TSchema>, options?: CommonOptions): Promise<DeleteWriteOpResultObject> {
     let writeConcern = getWriteConcern(options);
 
-    let res = await MongoDBMobile.deleteMany({
+    let res = await getMongoMobilePlugin().deleteMany({
       db: this.db.databaseName,
       collection: this.collectionName,
       filter: filter,
@@ -232,7 +231,7 @@ export class Collection {
   async deleteOne<TSchema extends object>(filter: FilterQuery<TSchema>, options?: CommonOptions ): Promise<DeleteWriteOpResultObject> {
     let writeConcern = getWriteConcern(options);
 
-    let res = await MongoDBMobile.deleteOne({
+    let res = await getMongoMobilePlugin().deleteOne({
       db: this.db.databaseName,
       collection: this.collectionName,
       filter: filter,
@@ -254,7 +253,7 @@ export class Collection {
   async findOneAndDelete<TSchema extends object>(filter: FilterQuery<TSchema>, options?: FindOneAndDeleteOption): Promise<FindAndModifyWriteOpResultObject<TSchema>> {
     let writeConcern = getWriteConcern(options);
 
-    let res = await MongoDBMobile.findOneAndDelete({
+    let res = await getMongoMobilePlugin().findOneAndDelete({
       db: this.db.databaseName,
       collection: this.collectionName,
       filter: filter,
@@ -276,7 +275,7 @@ export class Collection {
   async findOneAndReplace<TSchema extends object>(filter: FilterQuery<TSchema>, replacement: TSchema, options?: FindOneAndReplaceOption): Promise<FindAndModifyWriteOpResultObject<TSchema>> {
     let writeConcern = getWriteConcern(options);
 
-    let res = await MongoDBMobile.findOneAndReplace({
+    let res = await getMongoMobilePlugin().findOneAndReplace({
       db: this.db.databaseName,
       collection: this.collectionName,
       filter: filter,
@@ -302,7 +301,7 @@ export class Collection {
   async findOneAndUpdate<TSchema extends object>(filter: FilterQuery<TSchema>, update: UpdateQuery<TSchema> | TSchema, options?: FindOneAndUpdateOption): Promise<FindAndModifyWriteOpResultObject<TSchema>> {
     let writeConcern = getWriteConcern(options);
 
-    let res = await MongoDBMobile.findOneAndUpdate({
+    let res = await getMongoMobilePlugin().findOneAndUpdate({
       db: this.db.databaseName,
       collection: this.collectionName,
       filter: filter,

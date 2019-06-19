@@ -1,8 +1,7 @@
-import { Plugins } from '@capacitor/core';
-import { MongoDBMobilePlugin, MongoMobileTypes } from '../definitions';
+import { MongoMobileTypes } from '../definitions';
 import { Collection } from './collection';
 import { IteratorCallback } from './commonTypes';
-const MongoDBMobile = Plugins.MongoDBMobile as MongoDBMobilePlugin;
+import { getMongoMobilePlugin, CursorResult } from './index';
 export type CursorResult = object | null | boolean;
 
 const K_AUTOCLOSE_TIMEOUT = 1000 * 30; // Automatically close the cursor after 30 seconds of inactivity if it isn't closed automatically
@@ -35,7 +34,7 @@ class Cursor<T extends Object> {
     if (this.isClosed()) { throw new Error("Attempting to access a closed cursor"); }
   }
   private async execute() {
-    let cursorStart = await MongoDBMobile.find({
+    let cursorStart = await getMongoMobilePlugin().find({
       db: this.collection.db.databaseName,
       collection: this.collection.collectionName,
       filter: this._filter,
@@ -65,7 +64,7 @@ class Cursor<T extends Object> {
   /** http://mongodb.github.io/node-mongodb-native/3.1/api/Cursor.html#close */
   async close(): Promise<CursorResult> {
     if (!this.cursorId) { return false; }
-    await MongoDBMobile.closeCursor({
+    await getMongoMobilePlugin().closeCursor({
       cursorId: this.cursorId
     });
     if (this.autocloseTimer !== null) {
@@ -103,7 +102,7 @@ class Cursor<T extends Object> {
       countOpts.skip = (typeof options.skip == 'number') ? options.skip : this.options.skip;
       countOpts.limit = (typeof options.limit == 'number') ? options.limit : this.options.limit;
     }
-    let res = await MongoDBMobile.count({
+    let res = await getMongoMobilePlugin().count({
       db: this.collection.db.databaseName,
       collection: this.collection.collectionName,
       filter: this._filter,
@@ -195,7 +194,7 @@ class Cursor<T extends Object> {
       return null;
     }
 
-    let next = await MongoDBMobile.cursorGetNext<T>({
+    let next = await getMongoMobilePlugin().cursorGetNext<T>({
       cursorId: this.cursorId, batchSize: this._batchSize
     });
     if (next.complete) {

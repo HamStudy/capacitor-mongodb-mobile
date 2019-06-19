@@ -1,19 +1,10 @@
-import { Plugins } from '@capacitor/core';
-import { MongoDBMobilePlugin, MongoMobileTypes } from '../definitions';
+import { MongoMobileTypes } from '../definitions';
 import { Collection } from './collection';
 import { IteratorCallback } from './commonTypes';
-const MongoDBMobile = Plugins.MongoDBMobile as MongoDBMobilePlugin;
-export type CursorResult = object | null | boolean;
+import { getMongoMobilePlugin, CursorResult } from './index';
 
 const K_AUTOCLOSE_TIMEOUT = 1000 * 30; // Automatically close the cursor after 30 seconds of inactivity if it isn't closed automatically
 
-export interface CursorCommentOptions {
-    skip?: number;
-    limit?: number;
-    maxTimeMS?: number;
-    hint?: string;
-    readPreference?: any; // ignored
-}
 class AggregationCursor<T extends Object> {
   private cursorId: string = null;
   private _asyncTimeoutMs = K_AUTOCLOSE_TIMEOUT;
@@ -34,7 +25,7 @@ class AggregationCursor<T extends Object> {
     if (this.isClosed()) { throw new Error("Attempting to access a closed cursor"); }
   }
   private async execute() {
-    let cursorStart = await MongoDBMobile.aggregate({
+    let cursorStart = await getMongoMobilePlugin().aggregate({
       db: this.collection.db.databaseName,
       collection: this.collection.collectionName,
 
@@ -70,7 +61,7 @@ class AggregationCursor<T extends Object> {
   /** http://mongodb.github.io/node-mongodb-native/3.1/api/Cursor.html#close */
   async close(): Promise<CursorResult> {
     if (!this.cursorId) { return false; }
-    await MongoDBMobile.closeCursor({
+    await getMongoMobilePlugin().closeCursor({
       cursorId: this.cursorId
     });
     if (this.autocloseTimer !== null) {
@@ -152,7 +143,7 @@ class AggregationCursor<T extends Object> {
       return null;
     }
 
-    let next = await MongoDBMobile.cursorGetNext<T>({
+    let next = await getMongoMobilePlugin().cursorGetNext<T>({
       cursorId: this.cursorId, batchSize: this.options.batchSize || 5
     });
     if (next.complete) {

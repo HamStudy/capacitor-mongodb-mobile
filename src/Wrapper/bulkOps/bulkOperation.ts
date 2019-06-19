@@ -1,6 +1,5 @@
-import { Plugins } from '@capacitor/core';
-import { MongoDBMobilePlugin, MongoMobileTypes } from '../../definitions';
-const MongoDBMobile = Plugins.MongoDBMobile as MongoDBMobilePlugin;
+import { MongoMobileTypes } from '../../definitions';
+import { getMongoMobilePlugin } from '../index';
 
 import { Collection } from "../collection";
 import { FindOperatorsOrdered, FindOperatorsUnordered, Operation } from './Operation';
@@ -55,38 +54,38 @@ export class BulkOperation {
   private runOp(op: OperationRecord) : Promise<any> {
     switch(op.operation) {
       case OperationTypes.DeleteMany:
-        return MongoDBMobile.bulkWriteAddDeleteMany({
+        return getMongoMobilePlugin().bulkWriteAddDeleteMany({
           operationId: this.operationId,
           filter: op.selector,
           options: null // TODO: find a way to implement collation
         });
       case OperationTypes.DeleteOne:
-          return MongoDBMobile.bulkWriteAddDeleteOne({
+          return getMongoMobilePlugin().bulkWriteAddDeleteOne({
             operationId: this.operationId,
             filter: op.selector,
             options: null, // TODO: find a way to implement collation
           });
       case OperationTypes.InsertOne:
-          return MongoDBMobile.bulkWriteAddInsertOne({
+          return getMongoMobilePlugin().bulkWriteAddInsertOne({
             operationId: this.operationId,
             doc: op.doc,
           });
       case OperationTypes.ReplaceOne:
-          return MongoDBMobile.bulkWriteAddReplaceOne({
+          return getMongoMobilePlugin().bulkWriteAddReplaceOne({
             operationId: this.operationId,
             filter: op.selector,
             replacement: op.doc,
             options: {upsert: !!op.upsert} // TODO: find a way to implement collation
           });
       case OperationTypes.UpdateMany:
-          return MongoDBMobile.bulkWriteAddUpdateMany({
+          return getMongoMobilePlugin().bulkWriteAddUpdateMany({
             operationId: this.operationId,
             filter: op.selector,
             update: op.doc,
             options: {upsert: !!op.upsert} // TODO: find a way to implement collation
           });
       case OperationTypes.UpdateOne:
-          return MongoDBMobile.bulkWriteAddUpdateOne({
+          return getMongoMobilePlugin().bulkWriteAddUpdateOne({
             operationId: this.operationId,
             filter: op.selector,
             update: op.doc,
@@ -120,7 +119,7 @@ export class BulkOperation {
   }
 
   private doInit() {
-    let initOp = this.initOp = MongoDBMobile.newBulkWrite({
+    let initOp = this.initOp = getMongoMobilePlugin().newBulkWrite({
       db: this.collection.db.databaseName,
       collection: this.collection.collectionName,
       options: this.options
@@ -134,7 +133,7 @@ export class BulkOperation {
   async execute(): Promise<BulkWriteResult> {
     await Promise.all(this.pendingOps);
 
-    let res = await MongoDBMobile.bulkWriteExecute({
+    let res = await getMongoMobilePlugin().bulkWriteExecute({
       operationId: this.operationId
     });
 

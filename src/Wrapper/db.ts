@@ -1,12 +1,10 @@
 
-import { Plugins, PluginRegistry } from '@capacitor/core';
-import { MongoDBMobilePlugin } from '../definitions';
 import { Collection } from './collection';
+import { getMongoMobilePlugin } from './index';
 
-const MongoDBMobile = Plugins.MongoDBMobile as MongoDBMobilePlugin;
 
-import {MongoMobileTypes} from '../definitions';
-import { CommonOptions, WriteConcern, IndexOptions } from './commonTypes';
+import { MongoMobileTypes } from '../definitions';
+import { CommonOptions, WriteConcern } from './commonTypes';
 
 export interface DbCreateOptions extends CommonOptions {
   /**
@@ -68,14 +66,14 @@ export class Db {
   }
   get collections() : Promise<Collection[]> {
     return (async () => {
-      let collections = await MongoDBMobile.listCollections({db: this.databaseName});
+      let collections = await getMongoMobilePlugin().listCollections({db: this.databaseName});
       let collectionList = collections.map(c => this.collection(c.name));
       return collectionList;
     })();
   }
 
   async createCollection(name: string, options?: CollectionCreateOptions): Promise<Collection> {
-    let cThingy = await MongoDBMobile.createCollection({
+    let cThingy = await getMongoMobilePlugin().createCollection({
       db: this.databaseName,
       collection: name,
       options: <MongoMobileTypes.CollectionCreateOptions>{
@@ -103,7 +101,7 @@ export class Db {
   }
 
   async command(command: object, options?: {writeConcern: WriteConcern | number}): Promise<any> {
-    let result = await MongoDBMobile.runCommand({
+    let result = await getMongoMobilePlugin().runCommand({
       db: this.databaseName, command: command, options: options
     });
 
@@ -112,7 +110,7 @@ export class Db {
 
   async dropCollection(name: string): Promise<boolean> {
     try {
-      await MongoDBMobile.dropCollection({db: this.databaseName, collection: name});
+      await getMongoMobilePlugin().dropCollection({db: this.databaseName, collection: name});
       return true;
     } catch {
       return false;
@@ -120,7 +118,7 @@ export class Db {
   }
   async dropDatabase(): Promise<boolean> {
     try {
-      await MongoDBMobile.dropDatabase({db: this.databaseName});
+      await getMongoMobilePlugin().dropDatabase({db: this.databaseName});
       return true;
     } catch {
       return false;

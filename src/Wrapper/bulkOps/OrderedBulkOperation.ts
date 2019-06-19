@@ -8,6 +8,7 @@ export class OrderedBulkOperation extends BulkOperation {
     options.ordered = true;
     super(collection, options);
   }
+  
   /** http://mongodb.github.io/node-mongodb-native/3.1/api/OrderedBulkOperation.html#find */
   find(selector: object): FindOperatorsOrdered {
     return super.find(selector) as FindOperatorsOrdered;
