@@ -43,15 +43,15 @@ export class Operation implements FindOperatorsOrdered, FindOperatorsUnordered {
   deleteOne(): any {
     return this.removeOne();
   }
-  replaceOne(doc: object): OrderedBulkOperation {
+  replaceOne(doc: object): any {
     this.addOp({operation: OperationTypes.ReplaceOne, doc: doc, selector: this.selector, upsert: this._upsert});
     return this.parent as OrderedBulkOperation;
   }
-  update(doc: object): OrderedBulkOperation {
+  update(doc: object): any {
     this.addOp({operation: OperationTypes.UpdateMany, doc: doc, selector: this.selector, upsert: this._upsert});
     return this.parent as OrderedBulkOperation;
   }
-  updateOne(doc: object): OrderedBulkOperation {
+  updateOne(doc: object): any {
     this.addOp({operation: OperationTypes.UpdateOne, doc: doc, selector: this.selector, upsert: this._upsert});
     return this.parent as OrderedBulkOperation;
   }

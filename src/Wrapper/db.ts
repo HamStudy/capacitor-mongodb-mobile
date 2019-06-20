@@ -50,6 +50,12 @@ export interface CollectionCreateOptions extends CommonOptions {
   collation?: MongoMobileTypes.Collation;
 }
 
+export interface DatabaseListItem {
+  empty: boolean;
+  sizeOnDisk: number;
+  name: string;
+  Db: Db;
+}
 
 export class Db {
   private _collections: {[name: string]: Collection};
@@ -70,6 +76,17 @@ export class Db {
       let collectionList = collections.map(c => this.collection(c.name));
       return collectionList;
     })();
+  }
+
+  static async getDatabases() : Promise<DatabaseListItem[]> {
+    let list = await getMongoMobilePlugin().listDatabases();
+
+    return list.map(i => (<DatabaseListItem>{
+      name: i.name,
+      sizeOnDisk: i.sizeOnDisk,
+      empty: i.empty,
+      Db: new this(i.name)
+    }));
   }
 
   async createCollection(name: string, options?: CollectionCreateOptions): Promise<Collection> {

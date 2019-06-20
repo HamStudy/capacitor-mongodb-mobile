@@ -202,7 +202,7 @@ export namespace MongoMobileTypes {
 
 export interface MongoDBMobilePlugin {
   initWithId(options: {appID: string}): Promise<void>;
-  listDatabases(): Promise<{name: string}[]>;
+  listDatabases(): Promise<{name: string, sizeOnDisk: number, empty: boolean}[]>;
   listCollections(options: {db: string}): Promise<{name: string}[]>;
   createCollection(options: MongoMobileTypes.DatabaseDef & {
     options?: MongoMobileTypes.CollectionCreateOptions,

@@ -2,6 +2,23 @@ import { WebPlugin } from '@capacitor/core';
 import { MongoDBMobilePlugin, MongoMobileTypes } from './definitions';
 
 export class MongoDBMobileWeb extends WebPlugin implements MongoDBMobilePlugin {
+  createIndexes(options: MongoMobileTypes.DatabaseDef & { options?: MongoMobileTypes.CreateIndexOptions; indexes: [any, MongoMobileTypes.IndexOptions][]; }): Promise<{ indexesCreated: string[]; }> {
+    throw new Error("Method not implemented.");
+  }
+  dropIndex(options: MongoMobileTypes.DatabaseDef & {
+    options?: MongoMobileTypes.DropIndexOptions,
+    name: string,
+  }) : Promise<any>;
+  dropIndex(options: MongoMobileTypes.DatabaseDef & {
+    options?: MongoMobileTypes.DropIndexOptions,
+    keys: object,
+  }) : Promise<any>;
+  dropIndex(options: any) : Promise<any> {
+    throw new Error("Method not implemented.");
+  }
+  listIndexes(options: MongoMobileTypes.DatabaseDef): Promise<{ results: any[]; }> {
+    throw new Error("Method not implemented.");
+  }
   createCollection(options: MongoMobileTypes.DatabaseDef & { options?: MongoMobileTypes.CollectionCreateOptions; }): Promise<{ collection: string; }> {
     throw new Error("Method not implemented.");
   }
@@ -31,8 +48,16 @@ export class MongoDBMobileWeb extends WebPlugin implements MongoDBMobilePlugin {
   find(options: any) : Promise<any> {
     throw new Error("Method not implemented.");
   }
-  aggregate<T extends MongoMobileTypes.Document>(options: MongoMobileTypes.DatabaseDef & { cursor?: false; pipeline: {}[]; options?: MongoMobileTypes.AggregateOptions; }): Promise<{ results: T[]; }>;
-  aggregate(options: MongoMobileTypes.DatabaseDef & { cursor: true; filter: any; options?: MongoMobileTypes.AggregateOptions; }): Promise<{ cursorId: string; }>;
+  aggregate<T extends MongoMobileTypes.Document>(options: MongoMobileTypes.DatabaseDef & {
+    cursor?: false,
+    pipeline: MongoMobileTypes.PipelineStage<{}>[],
+    options?: MongoMobileTypes.AggregateOptions,
+  }) : Promise<{results: T[]}>;
+  aggregate(options: MongoMobileTypes.DatabaseDef & {
+    cursor: true,
+    pipeline: MongoMobileTypes.PipelineStage<{}>[],
+    options?: MongoMobileTypes.AggregateOptions,
+  }) : Promise<{cursorId: string}>;
   aggregate(options: any) : Promise<any> {
     throw new Error("Method not implemented.");
   }
@@ -75,7 +100,7 @@ export class MongoDBMobileWeb extends WebPlugin implements MongoDBMobilePlugin {
   newBulkWrite(options: MongoMobileTypes.DatabaseDef & { options?: MongoMobileTypes.FindOneAndUpdateOptions; }): Promise<{ operationId: string; }> {
     throw new Error("Method not implemented.");
   }
-  bulkWriteAddDeleteOne(options: { operationId: string; filter: any; options?: MongoMobileTypes.DeleteModelOptions; }): Promise<{ operationId: string; }> {
+  bulkWriteAddDeleteOne(options: { operationId: string; filter: any; options?: MongoMobileTypes.DeleteModelOptions; }): Promise<{ success: true; }> {
     throw new Error("Method not implemented.");
   }
   bulkWriteAddDeleteMany(options: { operationId: string; filter: any; options?: MongoMobileTypes.DeleteModelOptions; }): Promise<{ success: true; }> {

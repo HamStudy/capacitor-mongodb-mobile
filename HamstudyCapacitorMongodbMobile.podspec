@@ -1,6 +1,6 @@
 
   Pod::Spec.new do |s|
-    s.name = 'CapacitorMongodbMobile'
+    s.name = 'HamstudyCapacitorMongodbMobile'
     s.version = '0.0.1'
     s.summary = 'MongoDB Mobile plugin for capacitor'
     s.license = 'MIT'
@@ -10,4 +10,6 @@
     s.source_files = 'ios/Plugin/**/*.{swift,h,m,c,cc,mm,cpp}'
     s.ios.deployment_target  = '11.0'
     s.dependency 'Capacitor'
+    s.dependency 'StitchSDK', '~> 6.0.1'
+    s.dependency 'StitchLocalMongoDBService', '~> 6.0.0'
   end

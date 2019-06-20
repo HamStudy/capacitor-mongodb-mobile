@@ -16,35 +16,42 @@ public class MongoDBMobile: CAPPlugin {
     
     var cursorMap: [UUID: MongoCursor<Document>] = [:]
     var bulkOperations: [UUID: BulkWriteBatch] = [:]
-
-    public override init() {
-        var bundleId = ""
-        if (bundleIdentifier != nil) {
-            bundleId = bundleIdentifier!
-        }
-        do {
-            appClient = try Stitch.initializeDefaultAppClient(
-                withClientAppID: bundleId
-            )
-            print("Initialized stich app client")
-            
-            mongoClient =
-                try appClient!.serviceClient(fromFactory: mongoClientFactory)
-        } catch {
-        }
-        super.init()
-    }
+//
+//    public override init() {
+//        var bundleId = ""
+//        if (bundleIdentifier != nil) {
+//            bundleId = bundleIdentifier!
+//        }
+//        do {
+//            appClient = try Stitch.initializeDefaultAppClient(
+//                withClientAppID: bundleId
+//            )
+//            print("Initialized stich app client")
+//
+//            mongoClient =
+//                try appClient!.serviceClient(fromFactory: mongoClientFactory)
+//        } catch {
+//        }
+//        super.init()
+//    }
     
     
-    @objc func initWithId(_ call: CAPPluginCall) {
+    @objc func initDb(_ call: CAPPluginCall) {
         do {
+            let appId = call.getString("appId", bundleIdentifier)
+            if appId == nil {
+                throw UserError.invalidArgumentError(message: "appId must be provided and must be a string (e.g. org.hamstudy.somecoolthingy)")
+            }
             appClient = try Stitch.initializeDefaultAppClient(
-                withClientAppID: call.getString("appID")!
+                withClientAppID: appId!
             )
             print("Initialized stich app client")
             mongoClient =
                 try appClient!.serviceClient(fromFactory: mongoClientFactory)
+        } catch UserError.invalidArgumentError(let message) {
+            handleError(call, message)
         } catch {
+            handleError(call, "Could not initialize db")
         }
     }
 

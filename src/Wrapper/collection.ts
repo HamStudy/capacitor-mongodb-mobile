@@ -63,7 +63,7 @@ export class Collection {
       }
     });
     
-    return indexRes && indexRes[0];
+    return indexRes && indexRes.indexesCreated && indexRes.indexesCreated[0];
   }
   aggregate<T extends object = any>(pipeline?: object[], options?: MongoMobileTypes.AggregateOptions): AggregationCursor<T> {
     return new AggregationCursor<T>(this, pipeline, options);

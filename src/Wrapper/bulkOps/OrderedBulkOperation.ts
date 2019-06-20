@@ -1,7 +1,7 @@
 import { MongoMobileTypes } from '../../definitions';
 import { Collection } from "../collection";
 import { BulkOperation } from './bulkOperation';
-import { FindOperatorsOrdered, Operation } from './Operation';
+import { FindOperatorsOrdered } from './Operation';
 
 export class OrderedBulkOperation extends BulkOperation {
   constructor(collection: Collection, options: MongoMobileTypes.BulkWriteOptions = {}) {

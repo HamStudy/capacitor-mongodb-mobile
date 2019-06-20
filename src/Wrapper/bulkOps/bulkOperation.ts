@@ -36,7 +36,6 @@ function invalidOperation(type: never) {
 }
 
 export class BulkOperation {
-  private doneInit: boolean = false;
   private initOp: Promise<any>;
   private operationId: string;
 
@@ -96,7 +95,6 @@ export class BulkOperation {
     }
   }
   addOp(op: OperationRecord) {
-    let empty = new Promise<any>(res => res());
     if (!this.initOp) {
       this.doInit();
     }
