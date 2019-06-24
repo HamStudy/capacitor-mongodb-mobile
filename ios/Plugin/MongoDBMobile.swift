@@ -38,6 +38,12 @@ public class MongoDBMobile: CAPPlugin {
     
     @objc func initDb(_ call: CAPPluginCall) {
         do {
+            if appClient != nil {
+                call.resolve([
+                    "success": true
+                    ]);
+                return;
+            }
             let appId = call.getString("appId", bundleIdentifier)
             if appId == nil {
                 throw UserError.invalidArgumentError(message: "appId must be provided and must be a string (e.g. org.hamstudy.somecoolthingy)")
@@ -48,6 +54,9 @@ public class MongoDBMobile: CAPPlugin {
             print("Initialized stich app client")
             mongoClient =
                 try appClient!.serviceClient(fromFactory: mongoClientFactory)
+            call.resolve([
+                "success": true
+                ]);
         } catch UserError.invalidArgumentError(let message) {
             handleError(call, message)
         } catch {

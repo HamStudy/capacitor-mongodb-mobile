@@ -1,7 +1,12 @@
 import { WebPlugin } from '@capacitor/core';
 import { MongoDBMobilePlugin, MongoMobileTypes } from './definitions';
+import * as Wrapper from './Wrapper';
 
 export class MongoDBMobileWeb extends WebPlugin implements MongoDBMobilePlugin {
+  getWrapper() {
+    return Wrapper;
+  }
+
   createIndexes(options: MongoMobileTypes.DatabaseDef & { options?: MongoMobileTypes.CreateIndexOptions; indexes: [any, MongoMobileTypes.IndexOptions][]; }): Promise<{ indexesCreated: string[]; }> {
     throw new Error("Method not implemented.");
   }
