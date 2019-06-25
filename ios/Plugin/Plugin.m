@@ -6,6 +6,13 @@
 CAP_PLUGIN(MongoDBMobile, "MongoDBMobile",
            CAP_PLUGIN_METHOD(initDb, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(listDatabases, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(listCollections, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(createCollection, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(runCommand, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(dropDatabase, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(dropCollection, CAPPluginReturnPromise);
+           
+           
            CAP_PLUGIN_METHOD(count, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(find, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(aggregate, CAPPluginReturnPromise);
@@ -33,10 +40,11 @@ CAP_PLUGIN(MongoDBMobile, "MongoDBMobile",
            CAP_PLUGIN_METHOD(bulkWriteAddReplaceOne, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(bulkWriteAddUpdateOne, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(bulkWriteAddUpdateMany, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(bulkWriteCancel, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(bulkWriteExecute, CAPPluginReturnPromise);
 
-           CAP_PLUGIN_METHOD(dropIndex, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(createIndexes, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(dropIndex, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(listIndexes, CAPPluginReturnPromise);
 
            
