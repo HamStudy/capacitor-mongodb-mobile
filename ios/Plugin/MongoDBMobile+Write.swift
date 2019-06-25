@@ -77,8 +77,8 @@ extension MongoDBMobile {
             guard let collectionName = call.getString("collection") else {
                 throw UserError.invalidArgumentError(message: "collection name must be provided and must be a string")
             }
-            guard let docs = try OptionsParser.getDocumentArray(call.getArray("doc", Any.self), "docs") else {
-                throw UserError.invalidArgumentError(message: "docs must be provided and must be an arrat of Document objects")
+            guard let docs = try OptionsParser.getDocumentArray(call.getArray("docs", Any.self), "docs") else {
+                throw UserError.invalidArgumentError(message: "docs must be provided and must be an array of Document objects")
             }
             let insertManyOpts = try OptionsParser.getInsertManyOptions(call.getObject("options"))
             
@@ -95,10 +95,15 @@ extension MongoDBMobile {
                 return
             }
             
+            let stringIds = insertResult!.insertedIds.mapValues {bsonToJsValue($0)} as! [Int: String]
+            var idArray: [String] = []
+            for i in 0...stringIds.count-1 {
+                idArray.append(stringIds[i]!)
+            }
             call.resolve([
                 "success": true,
                 "insertedCount": insertResult!.insertedCount,
-                "insertedIds": insertResult!.insertedIds.mapValues {bsonToJsValue($0)}
+                "insertedIds": idArray
             ])
         } catch UserError.invalidArgumentError(let message) {
             handleError(call, message)
