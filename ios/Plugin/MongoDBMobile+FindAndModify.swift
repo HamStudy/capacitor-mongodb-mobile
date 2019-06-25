@@ -32,7 +32,7 @@ extension MongoDBMobile {
             let doc = try collection.findOneAndDelete(filter, options: opts)
             var outData: PluginResultData = [:]
             if (doc != nil) {
-                outData["doc"] = convertToDictionary(text: doc!.extendedJSON)!
+                outData["doc"] = convertToDictionary(text: doc!.canonicalExtendedJSON)!
             } else {
                 outData["doc"] = nil
             }
@@ -66,7 +66,7 @@ extension MongoDBMobile {
             let doc = try collection.findOneAndReplace(filter: filter, replacement: replacement, options: opts)
             var outData: PluginResultData = [:]
             if (doc != nil) {
-                outData["doc"] = convertToDictionary(text: doc!.extendedJSON)!
+                outData["doc"] = convertToDictionary(text: doc!.canonicalExtendedJSON)!
             } else {
                 outData["doc"] = nil
             }
@@ -100,7 +100,7 @@ extension MongoDBMobile {
             let doc = try collection.findOneAndUpdate(filter: filter, update: update, options: opts)
             var outData: PluginResultData = [:]
             if (doc != nil) {
-                outData["doc"] = convertToDictionary(text: doc!.extendedJSON)!
+                outData["doc"] = convertToDictionary(text: doc!.canonicalExtendedJSON)!
             } else {
                 outData["doc"] = nil
             }

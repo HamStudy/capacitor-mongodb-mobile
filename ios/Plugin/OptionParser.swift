@@ -100,7 +100,9 @@ public class OptionsParser {
                     return Document(fromBSON: data!)
                 }
             }
-            return try Document(fromJSON: JSONSerialization.data(withJSONObject: obj!, options: .prettyPrinted))
+            
+            let json = try JSONSerialization.data(withJSONObject: obj!, options: .prettyPrinted)
+            return try Document(fromJSON: json)
         } catch RuntimeError.internalError(let message) {
             throw UserError.invalidArgumentError(message: "Runtime error processing \(name): \(message)")
         }

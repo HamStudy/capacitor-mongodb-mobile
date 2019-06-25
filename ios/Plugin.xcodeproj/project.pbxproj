@@ -129,6 +129,7 @@
 			isa = PBXGroup;
 			children = (
 				50E1A94720377CB70090CE1A /* MongoDBMobile.swift */,
+				79B9D87B22B326610083E970 /* MongoDBMobile+Database.swift */,
 				79B9D87122B09CDD0083E970 /* MongoDBMobile+Read.swift */,
 				79B9D87322B09D2A0083E970 /* MongoDBMobile+Write.swift */,
 				79B9D87522B0CD450083E970 /* MongoDBMobile+Indexes.swift */,
@@ -138,7 +139,6 @@
 				50ADFFA72020EE4F00D50D53 /* Plugin.m */,
 				50ADFF8C201F53D600D50D53 /* Info.plist */,
 				79B9D86F22B06C130083E970 /* OptionParser.swift */,
-				79B9D87B22B326610083E970 /* MongoDBMobile+Database.swift */,
 			);
 			path = Plugin;
 			sourceTree = "<group>";

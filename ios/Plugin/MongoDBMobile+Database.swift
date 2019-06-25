@@ -25,7 +25,7 @@ extension MongoDBMobile {
             
             var resultsJson: [Any] = []
             for doc in dbListCursor {
-                resultsJson.append(convertToDictionary(text: doc.extendedJSON)!)
+                resultsJson.append(convertToDictionary(text: doc.canonicalExtendedJSON)!)
             }
             call.resolve(["databases": resultsJson])
         } catch {
@@ -63,7 +63,7 @@ extension MongoDBMobile {
 
             var resultsJson: [Any] = []
             for c in collections {
-                resultsJson.append(convertToDictionary(text: c.extendedJSON)!)
+                resultsJson.append(convertToDictionary(text: c.canonicalExtendedJSON)!)
             }
             
             let data: PluginResultData = [
@@ -138,7 +138,7 @@ extension MongoDBMobile {
             let reply = try db.runCommand(command, options: opts)
             
             let data: PluginResultData = [
-                "reply": convertToDictionary(text: reply.extendedJSON)!
+                "reply": convertToDictionary(text: reply.canonicalExtendedJSON)!
             ]
             
             call.resolve(data)

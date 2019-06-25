@@ -105,7 +105,7 @@ public class MongoDBMobile: CAPPlugin {
             }
         } else {
             for doc in cursor {
-                resultsJson.append(convertToDictionary(text: doc.extendedJSON)!)
+                resultsJson.append(convertToDictionary(text: doc.canonicalExtendedJSON)!)
             }
         }
         call.resolve(["results": resultsJson])

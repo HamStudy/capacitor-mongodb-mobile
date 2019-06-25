@@ -145,7 +145,7 @@ extension MongoDBMobile {
                 }
             } else {
                 for doc in cursor {
-                    resultsJson.append(convertToDictionary(text: doc.extendedJSON)!)
+                    resultsJson.append(convertToDictionary(text: doc.canonicalExtendedJSON)!)
                     if resultsJson.count >= batchSize {
                         break
                     }
