@@ -156,6 +156,7 @@ extension MongoDBMobile {
                     "results": resultsJson,
                     "complete": true
                     ])
+                cursor.close()
                 cursorMap.removeValue(forKey: cursorUuid)
             } else {
                 call.resolve(["results": resultsJson])
@@ -176,10 +177,12 @@ extension MongoDBMobile {
                 throw UserError.invalidArgumentError(message: "cusrorId is not in a valid format")
             }
             
-            if cursorMap.removeValue(forKey: cursorUuid) != nil {
-                call.resolve(["success": true, "removed": false])
-            } else {
+            let cursor = cursorMap.removeValue(forKey: cursorUuid)
+            if cursor != nil {
+                cursor!.close()
                 call.resolve(["success": true, "removed": true])
+            } else {
+                call.resolve(["success": true, "removed": false])
             }
         } catch UserError.invalidArgumentError(let message) {
             handleError(call, message)
