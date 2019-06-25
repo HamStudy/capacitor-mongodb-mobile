@@ -47,7 +47,7 @@ extension MongoDBMobile {
         } catch UserError.invalidArgumentError(let message) {
             handleError(call, message)
         } catch {
-            handleError(call, "Could not execute listCollections")
+            handleError(call, "Could not execute dropDatabase")
         }
     }
     
