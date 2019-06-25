@@ -126,16 +126,29 @@ extension MongoDBMobile {
             guard let cursor = cursorMap[cursorUuid] else {
                 throw UserError.invalidArgumentError(message: "cusrorId does not refer to a valid cursor")
             }
+            // if useBson is true we will return base64 encoded raw bson
+            let useBson = call.getBool("useBson", false)!
             
             let batchSize = call.getInt("batchSize") ?? 1
             if batchSize < 1 {
                 throw UserError.invalidArgumentError(message: "batchSize must be at least 1")
             }
             var resultsJson: [Any] = []
-            for doc in cursor {
-                resultsJson.append(convertToDictionary(text: doc.extendedJSON)!)
-                if resultsJson.count >= batchSize {
-                    break
+            if useBson {
+                for doc in cursor {
+                    resultsJson.append([
+                        "$b64": doc.rawBSON.base64EncodedString()
+                    ])
+                    if resultsJson.count >= batchSize {
+                        break
+                    }
+                }
+            } else {
+                for doc in cursor {
+                    resultsJson.append(convertToDictionary(text: doc.extendedJSON)!)
+                    if resultsJson.count >= batchSize {
+                        break
+                    }
                 }
             }
             if (resultsJson.count == 0) {

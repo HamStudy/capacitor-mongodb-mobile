@@ -93,9 +93,20 @@ public class MongoDBMobile: CAPPlugin {
             ])
     }
     func returnDocsFromCursor(_ call: CAPPluginCall, cursor: MongoCursor<Document>) {
+        // if useBson is true we will return base64 encoded raw bson
+        let useBson = call.getBool("useBson", false)!
+        
         var resultsJson: [Any] = []
-        for doc in cursor {
-            resultsJson.append(convertToDictionary(text: doc.extendedJSON)!)
+        if useBson {
+            for doc in cursor {
+                resultsJson.append([
+                    "$b64": doc.rawBSON.base64EncodedData()
+                ])
+            }
+        } else {
+            for doc in cursor {
+                resultsJson.append(convertToDictionary(text: doc.extendedJSON)!)
+            }
         }
         call.resolve(["results": resultsJson])
     }

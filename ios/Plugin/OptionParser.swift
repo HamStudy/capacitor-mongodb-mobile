@@ -90,6 +90,16 @@ public class OptionsParser {
             return nil
         }
         do {
+            if let dictObj = obj as? [String: String] {
+                if dictObj["$b64"] != nil {
+                    // It's a bson type!
+                    let data = Data(base64Encoded: dictObj["$b64"]!)
+                    if data == nil {
+                        throw UserError.invalidArgumentError(message: "Expected: \(name) should contain {$b64: <valid base64 string>}")
+                    }
+                    return Document(fromBSON: data!)
+                }
+            }
             return try Document(fromJSON: JSONSerialization.data(withJSONObject: obj!, options: .prettyPrinted))
         } catch RuntimeError.internalError(let message) {
             throw UserError.invalidArgumentError(message: "Runtime error processing \(name): \(message)")
