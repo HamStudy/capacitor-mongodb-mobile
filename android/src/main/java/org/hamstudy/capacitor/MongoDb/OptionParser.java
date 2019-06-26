@@ -3,6 +3,7 @@ package org.hamstudy.capacitor.MongoDb;
 import com.getcapacitor.JSObject;
 import com.mongodb.CursorType;
 import com.mongodb.WriteConcern;
+import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Collation;
 import com.mongodb.client.model.CollationAlternate;
@@ -17,11 +18,13 @@ import com.mongodb.client.model.ValidationLevel;
 import com.mongodb.client.model.ValidationOptions;
 
 import org.bson.Document;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.security.InvalidKeyException;
 import java.security.InvalidParameterException;
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 
@@ -115,42 +118,35 @@ public class OptionParser {
                 case "tailableAwait":
                     return CursorType.TailableAwait;
             }
-        } catch (Exception ex) {}
+        } catch (Exception ex) {
+        }
         throw new InvalidParameterException(InvalidArgErrorPrefix + name + "; expected 'tailable' | 'nonTailable' | 'tailableAwait'");
     }
-//    static func getHint(JSObject obj, String name) throws InvalidParameterException, InvalidKeyException {
-//        if obj == nil {
-//            return nil
-//        }
-//
-//        if let strObj = obj as? String {
-//            return Hint.indexName(strObj)
-//        } else {
-//            do {
-//                return Hint.indexSpec(try getDocument(obj, name)!)
-//            } catch UserError.invalidArgumentError {
-//                throw new InvalidParameterException(InvalidArgErrorPrefix + name + "; expected index name or spec document")
-//            }
-//        }
-//    }
-//    static func getDocumentArray(JSObject obj, String name) throws InvalidParameterException, InvalidKeyException {
-//        if obj == nil {
-//            return nil
-//        }
-//
-//        if let arrObj = obj as? [Any] {
-//            var arr: [Document] = []
-//            for (i, step) in arrObj.enumerated() {
-//                guard let doc = try getDocument(step, "pipeline[\(i)]") else {
-//                    throw UserError.invalidArgumentError(message: "Invalid type for variable \(name)[\(i)]: expected document")
-//                }
-//                arr.append(doc)
-//            }
-//            return arr
-//        } else {
-//            throw new InvalidParameterException(InvalidArgErrorPrefix + name + "; expected array of documents")
-//        }
-//    }
+    public static ArrayList<Document> getDocumentArray(JSONArray arr) throws InvalidParameterException {
+        ArrayList<Document> outList = new ArrayList<Document>();
+        for (int i = 0; i < arr.length(); ++i) {
+            try {
+                outList.add(getDocument(arr.getJSONObject(i)));
+            } catch (JSONException ex) {
+                throw new InvalidParameterException(String.valueOf(i));
+            }
+        }
+        return outList;
+    }
+    public static ArrayList<Document> getDocumentArray(JSObject obj, String name) throws InvalidParameterException, InvalidKeyException {
+        if (!obj.has(name)) {
+            throw new InvalidKeyException(name);
+        }
+
+        try {
+            JSONArray arr = obj.getJSONArray(name);
+            return getDocumentArray(arr);
+        } catch (JSONException ex) {
+            throw new InvalidParameterException(InvalidArgErrorPrefix + name + "; expected array of documents");
+        } catch (InvalidParameterException ex) {
+            throw new InvalidParameterException(InvalidArgErrorPrefix + name + "[" + ex.toString() + "]; expected Document");
+        }
+    }
     public static WriteConcern getWriteConcern(JSONObject obj, String name) throws InvalidParameterException, InvalidKeyException {
         if (!obj.has(name)) {
             throw new InvalidKeyException(name);
@@ -284,62 +280,95 @@ public class OptionParser {
 
         return opts;
     }
-    public static FindIterable<Document> applyFindOptions(FindIterable<Document> fi, JSONObject obj) {
+    public static FindIterable<Document> applyFindOptions(FindIterable<Document> it, JSONObject obj) {
+        if (obj == null) {
+            return it;
+        }
 
         try {
-            fi.partial(getBool(obj, "allowPartialResults"));
+            it.partial(getBool(obj, "allowPartialResults"));
         } catch (InvalidKeyException ex) {}
         try {
-            fi.batchSize(getInt32(obj, "batchSize"));
+            it.batchSize(getInt32(obj, "batchSize"));
         } catch (InvalidKeyException ex) {}
         try {
             Collation collation = getCollation(obj, "collation");
-            fi.collation(collation);
+            it.collation(collation);
         } catch (InvalidKeyException ex) {}
         try {
-            fi.comment(getString(obj, "comment"));
+            it.comment(getString(obj, "comment"));
         } catch (InvalidKeyException ex) {}
         try {
             CursorType cType = getCursorType(obj, "cursorType");
-            fi.cursorType(cType);
+            it.cursorType(cType);
         } catch (InvalidKeyException ex) {}
         try {
-            fi.hint(getDocument(obj, "hint"));
+            it.hint(getDocument(obj, "hint"));
         } catch (InvalidKeyException ex) {}
         try {
-            fi.limit(getInt32(obj, "limit"));
+            it.limit(getInt32(obj, "limit"));
         } catch (InvalidKeyException ex) {}
         try {
-            fi.max(getDocument(obj, "max"));
+            it.max(getDocument(obj, "max"));
         } catch (InvalidKeyException ex) {}
         try {
-            fi.maxAwaitTime(getInt32(obj, "maxAwaitTimeMS"), TimeUnit.MILLISECONDS);
+            it.maxAwaitTime(getInt32(obj, "maxAwaitTimeMS"), TimeUnit.MILLISECONDS);
         } catch (InvalidKeyException ex) {}
         try {
-            fi.maxTime(getInt64(obj, "maxTimeMS"), TimeUnit.MILLISECONDS);
+            it.maxTime(getInt64(obj, "maxTimeMS"), TimeUnit.MILLISECONDS);
         } catch (InvalidKeyException ex) {}
         try {
-            fi.min(getDocument(obj, "min"));
+            it.min(getDocument(obj, "min"));
         } catch (InvalidKeyException ex) {}
         try {
-            fi.noCursorTimeout(getBool(obj, "noCursorTimeout"));
+            it.noCursorTimeout(getBool(obj, "noCursorTimeout"));
         } catch (InvalidKeyException ex) {}
         try {
-            fi.projection(getDocument(obj, "projection"));
+            it.projection(getDocument(obj, "projection"));
         } catch (InvalidKeyException ex) {}
         try {
-            fi.returnKey(getBool(obj, "returnKey"));
+            it.returnKey(getBool(obj, "returnKey"));
         } catch (InvalidKeyException ex) {}
         try {
-            fi.showRecordId(getBool(obj, "showRecordId"));
+            it.showRecordId(getBool(obj, "showRecordId"));
         } catch (InvalidKeyException ex) {}
         try {
-            fi.skip(getInt32(obj, "skip"));
+            it.skip(getInt32(obj, "skip"));
         } catch (InvalidKeyException ex) {}
         try {
-            fi.sort(getDocument(obj, "sort"));
+            it.sort(getDocument(obj, "sort"));
         } catch (InvalidKeyException ex) {}
 
-        return fi;
+        return it;
+    }
+    public static AggregateIterable<Document> applyAggregateOptions(AggregateIterable<Document> it, JSONObject obj) {
+        if (obj == null) {
+            return it;
+        }
+
+        try {
+            it.allowDiskUse(getBool(obj, "allowDiskUse"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            it.batchSize(getInt32(obj, "batchSize"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            it.bypassDocumentValidation(getBool(obj, "bypassDocumentValidation"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            Collation collation = getCollation(obj, "collation");
+            it.collation(collation);
+        } catch (InvalidKeyException ex) {}
+        try {
+            it.comment(getString(obj, "comment"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            it.hint(getDocument(obj, "hint"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            it.maxTime(getInt64(obj, "maxTimeMS"), TimeUnit.MILLISECONDS);
+        } catch (InvalidKeyException ex) {}
+
+        return it;
     }
 }
