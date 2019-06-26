@@ -24,7 +24,7 @@ extension MongoDBMobile {
                 throw UserError.invalidArgumentError(message: "filter must be provided and must be an object")
             }
             let countOpts = try OptionsParser.getCountOptions(call.getObject("options"))
-            let filterDoc = try OptionsParser.getDocument(filter, "query")
+            let filterDoc = try OptionsParser.getDocument(filter, "filter")
             
             let db = mongoClient!.db(dbName)
             let collection = db.collection(collectionName)
