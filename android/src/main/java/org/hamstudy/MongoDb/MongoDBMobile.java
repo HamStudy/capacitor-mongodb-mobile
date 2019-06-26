@@ -419,59 +419,56 @@ public class MongoDBMobile extends Plugin {
         }
     }
 
-//    @PluginMethod()
-//    public void cursorGetNext(PluginCall call) {
-//        try {
-//            guard let cursorIdStr = call.getString("cursorId") else {
-//                throw UserError.invalidArgumentError(message: "cusrorId must be provided and must be a string")
-//            }
-//            guard let cursorUuid = UUID(uuidString: cursorIdStr) else {
-//                throw UserError.invalidArgumentError(message: "cusrorId is not in a valid format")
-//            }
-//            guard let cursor = cursorMap[cursorUuid] else {
-//                throw UserError.invalidArgumentError(message: "cusrorId does not refer to a valid cursor")
-//            }
-//            // if useBson is true we will return base64 encoded raw bson
-//            let useBson = call.getBool("useBson", false)!
-//
-//                    let batchSize = call.getInt("batchSize") ?? 1
-//            if batchSize < 1 {
-//                throw UserError.invalidArgumentError(message: "batchSize must be at least 1")
-//            }
-//            var resultsJson: [Any] = []
-//            if useBson {
-//                for doc in cursor {
-//                    resultsJson.append([
-//                            "$b64": doc.rawBSON.base64EncodedString()
-//                    ])
-//                    if resultsJson.count >= batchSize {
-//                        break
-//                    }
-//                }
-//            } else {
-//                for doc in cursor {
-//                    resultsJson.append(convertToDictionary(text: doc.canonicalExtendedJSON)!)
-//                    if resultsJson.count >= batchSize {
-//                        break
-//                    }
-//                }
-//            }
-//            if (resultsJson.count == 0) {
-//                call.resolve([
-//                        "results": resultsJson,
-//                        "complete": true
-//                    ])
-//                cursor.close()
-//                cursorMap.removeValue(forKey: cursorUuid)
-//            } else {
-//                call.resolve(["results": resultsJson])
-//            }
-//        } catch (InvalidParameterException ex) {
-//            handleError(call, ex.getMessage(), ex);
-//        } catch (Exception ex) {
-//            handleError(call, "Could not execute cursorGetNext", ex);
-//        }
-//    }
+    @PluginMethod()
+    public void cursorGetNext(PluginCall call) {
+        try {
+            String cursorIdStr = call.getString("cursorId", "n/a");
+            UUID cursorId = null;
+            try {
+                cursorId = UUID.fromString(cursorIdStr);
+            } catch (IllegalArgumentException ex) {
+                throw new InvalidParameterException("cursorId must be provided and must be a string");
+            }
+
+            MongoCursor<Document> cursor = cursorMap.remove(cursorId);
+
+            if (cursor == null) {
+                throw new InvalidParameterException("cursorId does not refer to a valid cursor");
+            }
+
+            boolean useBson = call.getBoolean("useBson");
+            int batchSize = call.getInt("batchSize", 1);
+            if (batchSize < 1) {
+                throw new InvalidParameterException("batchSize must be at least 1");
+            }
+
+            JSArray resultsJson = new JSArray();
+            while (cursor.hasNext()) {
+                // TODO: Handle BSON output!
+                Document cur = cursor.next();
+                resultsJson.put(new JSONObject(cur.toJson(jsonSettings)));
+                if (resultsJson.length() >= batchSize) {
+                    break;
+                }
+            }
+
+            JSObject ret = new JSObject();
+            ret.put("results", resultsJson);
+            if (resultsJson.length() == 0) {
+                // This is the end! Close the cursor and mark it complete
+                ret.put("complete", true);
+                cursor.close();
+                cursorMap.remove(cursorId);
+            }
+
+            call.resolve(ret);
+        } catch (InvalidParameterException ex) {
+            handleError(call, ex.getMessage(), ex);
+        } catch (Exception ex) {
+            handleError(call, "Could not execute closeCursor", ex);
+        }
+
+    }
 
     @PluginMethod()
     public void closeCursor(PluginCall call) {
