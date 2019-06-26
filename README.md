@@ -31,6 +31,12 @@ In general when you pass things into the plugin to save in the database it'll do
 to figure out what you meant even if you didn't use the full canonical format, but things like
 ObjectIds must be passed as an {$oid: "..."} or it will just be treated as a string.
 
+Installing
+==========
+
+    npm install @hamstudy/capacitor-mongodb-mobile
+
+
 Current State
 =============
 
