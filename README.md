@@ -31,6 +31,14 @@ In general when you pass things into the plugin to save in the database it'll do
 to figure out what you meant even if you didn't use the full canonical format, but things like
 ObjectIds must be passed as an {$oid: "..."} or it will just be treated as a string.
 
+Current State
+=============
+
+With beta.2 out we believe we have full support on iOS but none on Android -- yet! It should not
+be too hard to port the plugin to Java to get android support working, we just need to find time to
+do it. 
+
+
 MongoDB Mobile Client
 =====================
 
@@ -41,3 +49,11 @@ a wrapper around this plugin which provides an interface *very* similar to the
 
 For more information, see the [mongodb-mobile-client](https://github.com/HamStudy/mongodb-mobile-client)
 project.
+
+
+Helping out
+===========
+
+This was created for use with our own internal projects but of course I hope it'll catch on; I'll 
+try to be around (taxilian) on the [Capacitor Slack channels](https://getcapacitor.slack.com)
+if anyone would like to help; even just making the docs a little more accessible would be awesome.
