@@ -486,9 +486,6 @@ public class MongoDBMobile extends Plugin {
 
             MongoCursor<Document> cursor = cursorMap.remove(cursorId);
 
-            if (cursor == null) {
-                throw new InvalidParameterException("cursorId does not refer to a valid cursor");
-            }
             JSObject ret = new JSObject();
             ret.put("success", true);
             if (cursor != null) {
