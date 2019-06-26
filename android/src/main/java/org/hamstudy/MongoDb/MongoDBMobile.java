@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 // Base Stitch Packages
+import com.mongodb.WriteConcern;
 import com.mongodb.client.ListDatabasesIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
@@ -62,6 +63,26 @@ public class MongoDBMobile extends Plugin {
         call.success(ret);
     }
 
+    private MongoDatabase getDatabase(PluginCall call) throws InvalidParameterException {
+        return getDatabase(call, "options");
+    }
+    private MongoDatabase getDatabase(PluginCall call, String optionsKey) throws InvalidParameterException {
+        String dbName = call.getString("db", "");
+        if (dbName.isEmpty()) {
+            throw new InvalidParameterException("db name must be provided and must be a string");
+        }
+        MongoDatabase db = mongoClient.getDatabase(dbName);
+
+        if (!optionsKey.isEmpty() && call.hasOption(optionsKey)) {
+            JSObject options = call.getObject(optionsKey);
+            try {
+                WriteConcern wc = OptionParser.getWriteConcern(options, "writeConcern");
+                db = db.withWriteConcern(wc);
+            } catch (Exception ex) {}
+        }
+        return db;
+    }
+
     /**
      * Helper for handling errors
      */
@@ -72,6 +93,11 @@ public class MongoDBMobile extends Plugin {
         call.error(message, error);
     }
 
+    /**
+     * Helper to return a cursor to the page
+     * @param call
+     * @param cursor
+     */
     private void returnCursor(PluginCall call, MongoCursor<Document> cursor) {
 
         UUID cursorId = UUID.randomUUID();
@@ -82,17 +108,36 @@ public class MongoDBMobile extends Plugin {
         ret.put("cursorId", cursorId.toString());
         call.resolve(ret);
     }
+
+    /**
+     * Helper to return an array of documents to the page
+     * @param call
+     * @param cursor
+     */
     private void returnDocsFromCursor(PluginCall call, MongoCursor<Document> cursor) {
         JSONArray resultsJson = new JSONArray();
 
         while (cursor.hasNext()) {
             Document cur = cursor.next();
-            resultsJson.put(cur.toJson(jsonSettings));
+            try {
+                resultsJson.put(new JSONObject(cur.toJson(jsonSettings)));
+            } catch (Exception ex) {
+                // This shouldn't be possible, in theory, but who knows?
+                handleError(call, ex.toString(), ex);
+                return;
+            }
         }
         JSObject ret = new JSObject();
         ret.put("results", resultsJson);
         call.resolve(ret);
     }
+
+    /**
+     * Helper to return an array of documents to the page which returns them as base64-encoded
+     * BSON documents
+     * @param call
+     * @param cursor
+     */
     private void returnDocsFromCursorBson(PluginCall call, MongoCursor<RawBsonDocument> cursor) {
         JSONArray resultsJson = new JSONArray();
 
@@ -105,7 +150,8 @@ public class MongoDBMobile extends Plugin {
             try {
                 obj.put("$b64", b64String);
             } catch (Exception ex) {
-                handleError(call, "Could not wrap base64 string for some reason", ex);
+                handleError(call, "Could not wrap base64 string", ex);
+                return;
             }
 
             resultsJson.put(obj);
@@ -125,7 +171,7 @@ public class MongoDBMobile extends Plugin {
             JSONArray resultsJson = new JSONArray();
             while (cursor.hasNext()) {
                 Document cur = cursor.next();
-                resultsJson.put(cur.toJson(jsonSettings));
+                resultsJson.put(new JSONObject(cur.toJson(jsonSettings)));
             }
             JSObject ret = new JSObject();
             ret.put("databases", resultsJson);
@@ -163,18 +209,13 @@ public class MongoDBMobile extends Plugin {
     @PluginMethod()
     public void listCollections(PluginCall call) {
         try {
-            String dbName = call.getString("db", "");
-            if (dbName.isEmpty()) {
-                throw new InvalidParameterException("db name must be provided and must be a string");
-            }
-
-            MongoDatabase db = mongoClient.getDatabase(dbName);
+            MongoDatabase db = getDatabase(call);
             MongoCursor<Document> collections = db.listCollections().iterator();
 
             JSONArray resultsJson = new JSONArray();
             while (collections.hasNext()) {
                 Document cur = collections.next();
-                resultsJson.put(cur.toJson(jsonSettings));
+                resultsJson.put(new JSONObject(cur.toJson(jsonSettings)));
             }
 
             JSObject ret = new JSObject();
@@ -183,23 +224,18 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute dropDatabase", ex);
+            handleError(call, "Could not execute listCollections", ex);
         }
     }
 
     @PluginMethod()
     public void createCollection(PluginCall call) {
-        try {
-            String dbName = call.getString("db", "");
-            if (dbName.isEmpty()) {
-                throw new InvalidParameterException("db name must be provided and must be a string");
-            }
-            String collectionName = call.getString("collection", "");
+        try { String collectionName = call.getString("collection", "");
             if (collectionName.isEmpty()) {
                 throw new InvalidParameterException("collection name must be provided and must be a string");
             }
 
-            MongoDatabase db = mongoClient.getDatabase(dbName);
+            MongoDatabase db = getDatabase(call);
             CreateCollectionOptions opts = OptionParser.getCreateCollectionOptions(call.getObject("options", new JSObject()));
 
             db.createCollection(collectionName, opts);
@@ -214,55 +250,57 @@ public class MongoDBMobile extends Plugin {
             handleError(call, "Could not execute dropDatabase", ex);
         }
     }
-//    @PluginMethod()
-//    public void dropCollection(PluginCall call) {
-//        try {
-//            guard let dbName = call.getString("db") else {
-//                throw UserError.invalidArgumentError(message: "db name must be provided and must be a string")
-//            }
-//            guard let collectionName = call.getString("collection") else {
-//                throw UserError.invalidArgumentError(message: "collection name must be provided and must be a string")
-//            }
-//            let db = mongoClient!.db(dbName)
-//            let collection = db.collection(collectionName)
-//            try collection.drop()
-//
-//            let data: PluginResultData = [
-//            "dropped": true
-//            ]
-//            call.resolve(data)
-//        } catch (InvalidParameterException ex) {
-//            handleError(call, ex.getMessage(), ex);
-//        } catch (Exception ex) {
-//            handleError(call, "Could not execute dropDatabase", ex);
-//        }
-//    }
-//
-//    @PluginMethod()
-//    public void runCommand(PluginCall call) {
-//        try {
-//            guard let dbName = call.getString("db") else {
-//                throw UserError.invalidArgumentError(message: "db name must be provided and must be a string")
-//            }
-//            guard let command = try OptionsParser.getDocument(call.getObject("command"), "command") else {
-//                throw UserError.invalidArgumentError(message: "db name must be provided and must be a string")
-//            }
-//            let opts = try OptionsParser.getRunCommandOptions(call.getObject("options"))
-//
-//            let db = mongoClient!.db(dbName)
-//
-//            let reply = try db.runCommand(command, options: opts)
-//
-//            let data: PluginResultData = [
-//            "reply": convertToDictionary(text: reply.canonicalExtendedJSON)!
-//            ]
-//
-//            call.resolve(data)
-//
-//        } catch (InvalidParameterException ex) {
-//            handleError(call, ex.getMessage(), ex);
-//        } catch (Exception ex) {
-//            handleError(call, "Could not execute dropDatabase", ex);
-//        }
-//    }
+    @PluginMethod()
+    public void dropCollection(PluginCall call) {
+        try {
+            String collectionName = call.getString("collection", "");
+            if (collectionName.isEmpty()) {
+                throw new InvalidParameterException("collection name must be provided and must be a string");
+            }
+
+            MongoDatabase db = getDatabase(call);
+
+            ArrayList<String> names = mongoClient.listDatabaseNames().into(new ArrayList<String>());
+            JSObject ret = new JSObject();
+            if (names.contains(collectionName)) {
+                MongoCollection collection = db.getCollection(collectionName);
+                collection.drop();
+                ret.put("dropped", true);
+            } else {
+                ret.put("dropped", false);
+            }
+
+            call.resolve(ret);
+        } catch (InvalidParameterException ex) {
+            handleError(call, ex.getMessage(), ex);
+        } catch (Exception ex) {
+            handleError(call, "Could not execute dropCollection", ex);
+        }
+    }
+
+    @PluginMethod()
+    public void runCommand(PluginCall call) {
+        try {
+            MongoDatabase db = getDatabase(call);
+
+            JSObject commandSrc = call.getObject("command");
+            if (commandSrc == null) {
+                throw new InvalidParameterException("command must be a valid document");
+            }
+            JSObject rootObj = new JSObject();
+            rootObj.put("command", commandSrc);
+            Document command = OptionParser.getDocument(rootObj, "command");
+            Document reply = db.runCommand(command);
+
+            JSObject ret = new JSObject();
+            ret.put("reply", new JSONObject(command.toJson(jsonSettings)));
+
+            call.resolve(ret);
+
+        } catch (InvalidParameterException ex) {
+            handleError(call, ex.getMessage(), ex);
+        } catch (Exception ex) {
+            handleError(call, "Could not execute dropDatabase", ex);
+        }
+    }
 }
