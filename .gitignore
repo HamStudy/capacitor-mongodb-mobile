@@ -60,3 +60,4 @@ captures/
 .externalNativeBuild
 *.xcworkspace
 package-lock.json
+.vscode

@@ -1,6 +1,6 @@
 {
   "name": "@hamstudy/capacitor-mongodb-mobile",
-  "version": "1.0.0-beta.0",
+  "version": "1.0.0-beta.1",
   "description": "MongoDB Mobile plugin for capacitor",
   "main": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",
@@ -21,12 +21,6 @@
     "@capacitor/ios": "latest",
     "typescript": "^3.2.4"
   },
-  "files": [
-    "dist/",
-    "ios/",
-    "android/",
-    "CapacitorMongodbMobile.podspec"
-  ],
   "keywords": [
     "capacitor",
     "plugin",
