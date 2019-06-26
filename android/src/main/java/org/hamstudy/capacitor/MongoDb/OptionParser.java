@@ -37,7 +37,7 @@ public class OptionParser {
             return strObj.equals("true");
         } catch (Exception ex) {}
         try {
-            Integer intObj = obj.getInteger(name);
+            Integer intObj = obj.getInt(name);
             return intObj != 0;
         } catch (Exception ex) {}
 
@@ -86,7 +86,7 @@ public class OptionParser {
             throw new InvalidKeyException(name);
         }
         try {
-            JSObject jsdoc = obj.getJSObject(name);
+            JSONObject jsdoc = obj.getJSONObject(name);
             // TODO: Support bson documents (base64 encoded)
 
             return Document.parse(jsdoc.toString());
@@ -151,7 +151,7 @@ public class OptionParser {
 
         try {
             JSONObject wcObj = obj.getJSONObject(name);
-            int w = wcObj.getInteger("w", 0);
+            int w = getInt32(wcObj, "w");
             WriteConcern wc = new WriteConcern(w);
             try {
                 wc = wc.withJournal(getBool(wcObj, "j"));
@@ -167,10 +167,10 @@ public class OptionParser {
             return new WriteConcern(w);
         } catch (Exception ex) {}
 
-        throw new InvalidParameterException(InvalidArgErrorPrefix + name + "; expected number or {w?: number, j?: boolean, wtimeout?: number}")
+        throw new InvalidParameterException(InvalidArgErrorPrefix + name + "; expected number or {w?: number, j?: boolean, wtimeout?: number}");
     }
     public static CreateCollectionOptions getCreateCollectionOptions(JSONObject obj) {
-        if (opts == null) {
+        if (obj == null) {
             return null;
         }
         CreateCollectionOptions opts = new CreateCollectionOptions();
@@ -207,7 +207,7 @@ public class OptionParser {
         } catch (InvalidKeyException ex) {}
 
         try {
-            JSObject collationSrc = obj.getJSObject("collation");
+            JSONObject collationSrc = obj.getJSONObject("collation");
             Collation.Builder builder = Collation.builder();
 
             try {
@@ -220,7 +220,7 @@ public class OptionParser {
                 builder.collationCaseFirst(CollationCaseFirst.fromString(getString(collationSrc, "caseFirst")));
             } catch (InvalidKeyException ex) {}
             try {
-                builder.collationStrength(CollationStrength.fromInt(getInt(collationSrc, "strength")));
+                builder.collationStrength(CollationStrength.fromInt(getInt32(collationSrc, "strength")));
             } catch (InvalidKeyException ex) {}
             try {
                 builder.numericOrdering(getBool(collationSrc, "numericOrdering"));

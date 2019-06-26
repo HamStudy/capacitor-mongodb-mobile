@@ -1,5 +1,7 @@
 package org.hamstudy.MongoDb;
 
+import android.util.Base64;
+
 import com.getcapacitor.JSObject;
 import com.getcapacitor.NativePlugin;
 import com.getcapacitor.Plugin;
@@ -7,6 +9,9 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 
 import java.security.InvalidParameterException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 // Base Stitch Packages
@@ -43,17 +48,17 @@ public class MongoDBMobile extends Plugin {
     // Create a Client for MongoDB Mobile (initializing MongoDB Mobile)
     MongoClient mongoClient;
 
-    Dictionary<UUID, MongoCursor<Document>> cursorMap = new Map<UUID, MongoCursor<Document>>();
+    HashMap<UUID, MongoCursor<Document>> cursorMap = new HashMap<UUID, MongoCursor<Document>>();
 
     @PluginMethod()
     public void initDb(PluginCall call) {
         final StitchAppClient client =
                 Stitch.initializeDefaultAppClient(getBridge().getActivity().getPackageName());
 
-        mobileClient = client.getServiceClient(LocalMongoDbService.clientFactory);
+        mongoClient = client.getServiceClient(LocalMongoDbService.clientFactory);
 
         JSObject ret = new JSObject();
-        ret.put("value", value);
+        ret.put("success", true);
         call.success(ret);
     }
 
@@ -94,7 +99,7 @@ public class MongoDBMobile extends Plugin {
         while (cursor.hasNext()) {
             RawBsonDocument cur = cursor.next();
             ByteBuf data = cur.getByteBuffer();
-            String b64String = Base64.encode(data);
+            String b64String = Base64.encodeToString(data.array(), Base64.DEFAULT);
 
             JSONObject obj = new JSONObject();
             try {
@@ -136,10 +141,10 @@ public class MongoDBMobile extends Plugin {
             if (dbName.isEmpty()) {
                 throw new InvalidParameterException("db name must be provided and must be a string");
             }
-            List<String> names = mongoClient.listDatabaseNames().into(new List<String>());
+            ArrayList<String> names = mongoClient.listDatabaseNames().into(new ArrayList<String>());
 
             JSObject ret = new JSObject();
-            if (names.stream().anyMatch(str -> str.equals(dbName))) {
+            if (names.contains(dbName)) {
                 MongoDatabase db = mongoClient.getDatabase(dbName);
                 db.drop();
                 ret.put("dropped", true);
@@ -167,8 +172,8 @@ public class MongoDBMobile extends Plugin {
             MongoCursor<Document> collections = db.listCollections().iterator();
 
             JSONArray resultsJson = new JSONArray();
-            while (cursor.hasNext()) {
-                Document cur = cursor.next();
+            while (collections.hasNext()) {
+                Document cur = collections.next();
                 resultsJson.put(cur.toJson(jsonSettings));
             }
 
