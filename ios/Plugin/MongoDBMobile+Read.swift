@@ -118,13 +118,13 @@ extension MongoDBMobile {
     @objc func cursorGetNext(_ call: CAPPluginCall) {
         do {
             guard let cursorIdStr = call.getString("cursorId") else {
-                throw UserError.invalidArgumentError(message: "cusrorId must be provided and must be a string")
+                throw UserError.invalidArgumentError(message: "cursorId must be provided and must be a string")
             }
             guard let cursorUuid = UUID(uuidString: cursorIdStr) else {
-                throw UserError.invalidArgumentError(message: "cusrorId is not in a valid format")
+                throw UserError.invalidArgumentError(message: "cursorId is not in a valid format")
             }
             guard let cursor = cursorMap[cursorUuid] else {
-                throw UserError.invalidArgumentError(message: "cusrorId does not refer to a valid cursor")
+                throw UserError.invalidArgumentError(message: "cursorId does not refer to a valid cursor")
             }
             // if useBson is true we will return base64 encoded raw bson
             let useBson = call.getBool("useBson", false)!
@@ -171,10 +171,10 @@ extension MongoDBMobile {
     @objc func closeCursor(_ call: CAPPluginCall) {
         do {
             guard let cursorIdStr = call.getString("cursorId") else {
-                throw UserError.invalidArgumentError(message: "cusrorId must be provided and must be a string")
+                throw UserError.invalidArgumentError(message: "cursorId must be provided and must be a string")
             }
             guard let cursorUuid = UUID(uuidString: cursorIdStr) else {
-                throw UserError.invalidArgumentError(message: "cusrorId is not in a valid format")
+                throw UserError.invalidArgumentError(message: "cursorId is not in a valid format")
             }
             
             let cursor = cursorMap.removeValue(forKey: cursorUuid)
