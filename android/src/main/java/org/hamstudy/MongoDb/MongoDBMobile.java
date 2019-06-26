@@ -16,10 +16,12 @@ import java.util.UUID;
 
 // Base Stitch Packages
 import com.mongodb.WriteConcern;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.ListDatabasesIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.model.CreateCollectionOptions;
 import com.mongodb.stitch.android.core.Stitch;
 import com.mongodb.stitch.android.core.StitchAppClient;
@@ -81,6 +83,14 @@ public class MongoDBMobile extends Plugin {
             } catch (Exception ex) {}
         }
         return db;
+    }
+    private MongoCollection<Document> getCollection(PluginCall call, MongoDatabase db) {
+        String collectionName = call.getString("db", "");
+        if (collectionName.isEmpty()) {
+            throw new InvalidParameterException("collection name must be provided and must be a string");
+        }
+        MongoCollection collection = db.getCollection(collectionName);
+        return collection;
     }
 
     /**
@@ -161,7 +171,9 @@ public class MongoDBMobile extends Plugin {
         call.resolve(ret);
     }
 
-    /** DATABASE METHODS **/
+    /**********************
+     ** DATABASE METHODS **
+     **********************/
     @PluginMethod()
     public void listDatabases(PluginCall call) {
         try {
@@ -247,7 +259,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute dropDatabase", ex);
+            handleError(call, "Could not execute createCollection", ex);
         }
     }
     @PluginMethod()
@@ -300,7 +312,179 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute dropDatabase", ex);
+            handleError(call, "Could not execute runCommand", ex);
         }
     }
+
+    /******************
+     ** READ METHODS **
+     ******************/
+    @PluginMethod()
+    public void count(PluginCall call) {
+        try {
+            CountOptions opts = OptionParser.getCountOptions(call.getObject("options"));
+            Document filterDoc = OptionParser.getDocument(call.getObject("filter"));
+            if (filterDoc == null) {
+                filterDoc = new Document();
+            }
+
+            MongoDatabase db = getDatabase(call);
+            MongoCollection<Document> collection = getCollection(call, db);
+
+            long count = collection.countDocuments(filterDoc);
+
+            JSObject ret = new JSObject();
+            ret.put("count", count);
+            call.resolve(ret);
+        } catch (InvalidParameterException ex) {
+            handleError(call, ex.getMessage(), ex);
+        } catch (Exception ex) {
+            handleError(call, "Could not execute count", ex);
+        }
+    }
+
+    private MongoCursor<Document> _find(PluginCall call) {
+        Document filterDoc = OptionParser.getDocument(call.getObject("filter"));
+        if (filterDoc == null) {
+            filterDoc = new Document();
+        }
+
+        MongoDatabase db = getDatabase(call);
+        MongoCollection<Document> collection = getCollection(call, db);
+
+        FindIterable<Document> fi = collection.find(filterDoc);
+        fi = OptionParser.applyFindOptions(fi, call.getObject("options"));
+
+        MongoCursor<Document> cursor = fi.iterator();
+
+        return cursor;
+    }
+//
+//    private void _execAggregate(PluginCall call) throws -> MongoCursor<Document> {
+//        guard let pipeline = try OptionsParser.getDocumentArray(call.getArray("pipeline", Any.self), "pipeline") else {
+//            throw UserError.invalidArgumentError(message: "pipeline must be provided and must be an array of pipeline operations")
+//        }
+//        let aggOpts = try OptionsParser.getAggregateOptions(call.getObject("options"))
+//        MongoDatabase db = getDatabase(call);
+//        MongoCollection<Document> collection = getCollection(call, db);
+//        let cursor = try collection.aggregate(pipeline, options: aggOpts)
+//
+//        return cursor
+//    }
+
+    @PluginMethod()
+    public void find(PluginCall call) {
+        try {
+            boolean useCursor = call.getBoolean("cursor", false);
+
+            MongoCursor<Document> cursor= _find(call);
+
+            if (useCursor) {
+                returnCursor(call, cursor);
+            } else {
+                returnDocsFromCursor(call, cursor);
+            }
+        } catch (InvalidParameterException ex) {
+            handleError(call, ex.getMessage(), ex);
+        } catch (Exception ex) {
+            handleError(call, "Could not execute find", ex);
+        }
+    }
+
+//    @PluginMethod()
+//    public void aggregate(PluginCall call) {
+//        try {
+//            let useCursor = call.getBool("cursor", false)!
+//
+//                    let cursor = try _execAggregate(call)
+//
+//            if useCursor {
+//                returnCursor(call, cursor: cursor)
+//            } else {
+//                returnDocsFromCursor(call, cursor: cursor)
+//            }
+//        } catch (InvalidParameterException ex) {
+//            handleError(call, ex.getMessage(), ex);
+//        } catch (Exception ex) {
+//            handleError(call, "Could not execute aggregate", ex);
+//        }
+//    }
+//
+//    @PluginMethod()
+//    public void cursorGetNext(PluginCall call) {
+//        try {
+//            guard let cursorIdStr = call.getString("cursorId") else {
+//                throw UserError.invalidArgumentError(message: "cusrorId must be provided and must be a string")
+//            }
+//            guard let cursorUuid = UUID(uuidString: cursorIdStr) else {
+//                throw UserError.invalidArgumentError(message: "cusrorId is not in a valid format")
+//            }
+//            guard let cursor = cursorMap[cursorUuid] else {
+//                throw UserError.invalidArgumentError(message: "cusrorId does not refer to a valid cursor")
+//            }
+//            // if useBson is true we will return base64 encoded raw bson
+//            let useBson = call.getBool("useBson", false)!
+//
+//                    let batchSize = call.getInt("batchSize") ?? 1
+//            if batchSize < 1 {
+//                throw UserError.invalidArgumentError(message: "batchSize must be at least 1")
+//            }
+//            var resultsJson: [Any] = []
+//            if useBson {
+//                for doc in cursor {
+//                    resultsJson.append([
+//                            "$b64": doc.rawBSON.base64EncodedString()
+//                    ])
+//                    if resultsJson.count >= batchSize {
+//                        break
+//                    }
+//                }
+//            } else {
+//                for doc in cursor {
+//                    resultsJson.append(convertToDictionary(text: doc.canonicalExtendedJSON)!)
+//                    if resultsJson.count >= batchSize {
+//                        break
+//                    }
+//                }
+//            }
+//            if (resultsJson.count == 0) {
+//                call.resolve([
+//                        "results": resultsJson,
+//                        "complete": true
+//                    ])
+//                cursor.close()
+//                cursorMap.removeValue(forKey: cursorUuid)
+//            } else {
+//                call.resolve(["results": resultsJson])
+//            }
+//        } catch (InvalidParameterException ex) {
+//            handleError(call, ex.getMessage(), ex);
+//        } catch (Exception ex) {
+//            handleError(call, "Could not execute cursorGetNext", ex);
+//        }
+//    }
+//
+//    @PluginMethod()
+//    public void closeCursor(PluginCall call) {
+//        try {
+//            guard let cursorIdStr = call.getString("cursorId") else {
+//                throw UserError.invalidArgumentError(message: "cusrorId must be provided and must be a string")
+//            }
+//            guard let cursorUuid = UUID(uuidString: cursorIdStr) else {
+//                throw UserError.invalidArgumentError(message: "cusrorId is not in a valid format")
+//            }
+//
+//            let cursor = cursorMap.removeValue(forKey: cursorUuid)
+//            if cursor != nil {
+//                cursor!.close()
+//                call.resolve(["success": true, "removed": true])
+//            } else {
+//                call.resolve(["success": true, "removed": false])
+//            }
+//        } catch (InvalidParameterException ex) {
+//            handleError(call, ex.getMessage(), ex);
+//        } catch (Exception ex) {
+//            handleError(call, "Could not execute closeCursor", ex);
+//        }
+//    }
 }
