@@ -25,6 +25,7 @@ extension MongoDBMobile {
                 throw UserError.invalidArgumentError(message: "query must be provided and must be a Document object")
             }
             let opts = try OptionsParser.getFindOneAndDeleteOptions(call.getObject("options"))
+            let useBson = call.getBool("useBson", false)!
             
             let db = mongoClient!.db(dbName)
             let collection = db.collection(collectionName)
@@ -32,7 +33,11 @@ extension MongoDBMobile {
             let doc = try collection.findOneAndDelete(filter, options: opts)
             var outData: PluginResultData = [:]
             if (doc != nil) {
-                outData["doc"] = convertToDictionary(text: doc!.canonicalExtendedJSON)!
+                if useBson {
+                    outData["doc"] = ["$b64": doc!.rawBSON.base64EncodedData()]
+                } else {
+                    outData["doc"] = convertToDictionary(text: doc!.canonicalExtendedJSON)!
+                }
             } else {
                 outData["doc"] = nil
             }
@@ -59,14 +64,19 @@ extension MongoDBMobile {
                 throw UserError.invalidArgumentError(message: "replacement must be provided and must be a Document object")
             }
             let opts = try OptionsParser.getFindOneAndReplaceOptions(call.getObject("options"))
-            
+            let useBson = call.getBool("useBson", false)!
+
             let db = mongoClient!.db(dbName)
             let collection = db.collection(collectionName)
             
             let doc = try collection.findOneAndReplace(filter: filter, replacement: replacement, options: opts)
             var outData: PluginResultData = [:]
             if (doc != nil) {
-                outData["doc"] = convertToDictionary(text: doc!.canonicalExtendedJSON)!
+                if useBson {
+                    outData["doc"] = ["$b64": doc!.rawBSON.base64EncodedData()]
+                } else {
+                    outData["doc"] = convertToDictionary(text: doc!.canonicalExtendedJSON)!
+                }
             } else {
                 outData["doc"] = nil
             }
@@ -93,14 +103,19 @@ extension MongoDBMobile {
                 throw UserError.invalidArgumentError(message: "update must be provided and must be a Document object")
             }
             let opts = try OptionsParser.getFindOneAndUpdateOptions(call.getObject("options"))
-            
+            let useBson = call.getBool("useBson", false)!
+
             let db = mongoClient!.db(dbName)
             let collection = db.collection(collectionName)
             
             let doc = try collection.findOneAndUpdate(filter: filter, update: update, options: opts)
             var outData: PluginResultData = [:]
             if (doc != nil) {
-                outData["doc"] = convertToDictionary(text: doc!.canonicalExtendedJSON)!
+                if useBson {
+                    outData["doc"] = ["$b64": doc!.rawBSON.base64EncodedData()]
+                } else {
+                    outData["doc"] = convertToDictionary(text: doc!.canonicalExtendedJSON)!
+                }
             } else {
                 outData["doc"] = nil
             }
