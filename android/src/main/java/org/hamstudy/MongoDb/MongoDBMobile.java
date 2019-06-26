@@ -2,6 +2,7 @@ package org.hamstudy.MongoDb;
 
 import android.util.Base64;
 
+import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.NativePlugin;
 import com.getcapacitor.Plugin;
@@ -39,11 +40,8 @@ import org.bson.RawBsonDocument;
 import org.bson.json.JsonMode;
 import org.bson.json.JsonWriterSettings;
 import org.hamstudy.capacitor.MongoDb.OptionParser;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
-
-import java.util.Dictionary;
 
 @NativePlugin()
 public class MongoDBMobile extends Plugin {
@@ -126,7 +124,7 @@ public class MongoDBMobile extends Plugin {
      * @param cursor
      */
     private void returnDocsFromCursor(PluginCall call, MongoCursor<Document> cursor) {
-        JSONArray resultsJson = new JSONArray();
+        JSArray resultsJson = new JSArray();
 
         while (cursor.hasNext()) {
             Document cur = cursor.next();
@@ -150,7 +148,7 @@ public class MongoDBMobile extends Plugin {
      * @param cursor
      */
     private void returnDocsFromCursorBson(PluginCall call, MongoCursor<RawBsonDocument> cursor) {
-        JSONArray resultsJson = new JSONArray();
+        JSArray resultsJson = new JSArray();
 
         while (cursor.hasNext()) {
             RawBsonDocument cur = cursor.next();
@@ -181,7 +179,7 @@ public class MongoDBMobile extends Plugin {
             ListDatabasesIterable<Document> list = mongoClient.listDatabases();
             MongoCursor<Document> cursor = list.iterator();
 
-            JSONArray resultsJson = new JSONArray();
+            JSArray resultsJson = new JSArray();
             while (cursor.hasNext()) {
                 Document cur = cursor.next();
                 resultsJson.put(new JSONObject(cur.toJson(jsonSettings)));
@@ -225,7 +223,7 @@ public class MongoDBMobile extends Plugin {
             MongoDatabase db = getDatabase(call);
             MongoCursor<Document> collections = db.listCollections().iterator();
 
-            JSONArray resultsJson = new JSONArray();
+            JSArray resultsJson = new JSArray();
             while (collections.hasNext()) {
                 Document cur = collections.next();
                 resultsJson.put(new JSONObject(cur.toJson(jsonSettings)));
