@@ -21,7 +21,10 @@ extension MongoDBMobile {
                 throw UserError.invalidArgumentError(message: "collection name must be provided and must be a string")
             }
             guard let indexes = call.getArray("indexes", Array<[String: Any?]>.self) else {
-                throw UserError.invalidArgumentError(message: "indexes must be Arrray<[keys: Document, options?: IndexOptions]>")
+                throw UserError.invalidArgumentError(message: "indexes must be Array<[keys: Document, options?: IndexOptions]>")
+            }
+            if (indexes.count < 1) {
+                throw UserError.invalidArgumentError(message: "indexes must be Array<[keys: Document, options?: IndexOptions]> with length >= 1")
             }
             var indexModels: [IndexModel] = []
             for (i, index) in indexes.enumerated() {
@@ -57,7 +60,7 @@ extension MongoDBMobile {
                 throw UserError.invalidArgumentError(message: "collection name must be provided and must be a string")
             }
             let name = call.getString("name")
-            let keys = call.getString("keys")
+            let keys = call.getObject("keys")
             
             let dropOptions = try OptionsParser.getDropIndexOptions(call.getObject("options"))
             
