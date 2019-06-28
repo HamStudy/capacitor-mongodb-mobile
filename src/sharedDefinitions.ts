@@ -262,7 +262,7 @@ export interface MongoDBMobileSource {
   replaceOne<T extends object>(options: MongoMobileTypes.DatabaseDef & {
     options?: MongoMobileTypes.ReplaceOptions,
     filter: any,
-    doc: T,
+    replacement: T,
   }) : Promise<{success: true, upsertedId?: string, matchedCount: number, modifiedCount: number, upsertedCount: number}>;
   updateOne(options: MongoMobileTypes.DatabaseDef & {
     options?: MongoMobileTypes.UpdateOptions,

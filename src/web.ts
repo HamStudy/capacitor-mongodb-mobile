@@ -78,7 +78,7 @@ export class MongoDBMobileWeb extends WebPlugin implements MongoDBMobilePlugin {
   insertMany<T extends object>(options: MongoMobileTypes.DatabaseDef & { options?: MongoMobileTypes.InsertManyOptions; docs: T[]; }): Promise<{ success: true; insertedIds?: string[]; insertedCount: number; }> {
     throw new Error("Method not implemented.");
   }
-  replaceOne<T extends object>(options: MongoMobileTypes.DatabaseDef & { options?: MongoMobileTypes.ReplaceOptions; filter: any; doc: T; }): Promise<{ success: true; upsertedId?: string; matchedCount: number; modifiedCount: number; upsertedCount: number; }> {
+  replaceOne<T extends object>(options: MongoMobileTypes.DatabaseDef & { options?: MongoMobileTypes.ReplaceOptions; filter: any; replacement: T; }): Promise<{ success: true; upsertedId?: string; matchedCount: number; modifiedCount: number; upsertedCount: number; }> {
     throw new Error("Method not implemented.");
   }
   updateOne(options: MongoMobileTypes.DatabaseDef & { options?: MongoMobileTypes.UpdateOptions; filter: any; update: any; }): Promise<MongoMobileTypes.UpdateResult> {

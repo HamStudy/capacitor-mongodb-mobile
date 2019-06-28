@@ -122,15 +122,15 @@ extension MongoDBMobile {
             guard let filter = try OptionsParser.getDocument(call.getObject("filter"), "filter") else {
                 throw UserError.invalidArgumentError(message: "filter must be provided and must be an object")
             }
-            guard let doc = try OptionsParser.getDocument(call.getObject("doc"), "doc") else {
-                throw UserError.invalidArgumentError(message: "doc must be provided and must be a Document object")
+            guard let replacement = try OptionsParser.getDocument(call.getObject("replacement"), "replacement") else {
+                throw UserError.invalidArgumentError(message: "replacement must be provided and must be a Document object")
             }
             let replaceOneOpts = try OptionsParser.getReplaceOptions(call.getObject("options"))
             
             let db = mongoClient!.db(dbName)
             let collection = db.collection(collectionName)
             
-            let replaceResult = try collection.replaceOne(filter: filter, replacement: doc, options: replaceOneOpts)
+            let replaceResult = try collection.replaceOne(filter: filter, replacement: replacement, options: replaceOneOpts)
             var res: PluginResultData = [
                 "success": true,
                 "matchedCount": -1,

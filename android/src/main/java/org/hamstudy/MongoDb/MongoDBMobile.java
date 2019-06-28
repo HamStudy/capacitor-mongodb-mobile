@@ -633,12 +633,12 @@ public class MongoDBMobile extends Plugin {
     @PluginMethod()
     public void replaceOne(PluginCall call) {
         try {
-            Document doc = null;
+            Document replacement = null;
             try {
-                doc = OptionParser.getDocument(call.getObject("doc"));
+                replacement = OptionParser.getDocument(call.getObject("replacement"));
             } catch (Exception ex) {}
-            if (doc == null) {
-                throw new InvalidParameterException("doc must be a valid document object");
+            if (replacement == null) {
+                throw new InvalidParameterException("replacement must be a valid document object");
             }
             Document filterDoc = OptionParser.getDocument(call.getObject("filter"));
             if (filterDoc == null) {
@@ -650,7 +650,7 @@ public class MongoDBMobile extends Plugin {
 
             ReplaceOptions opts = OptionParser.getReplaceOptions(call.getObject("options"));
 
-            UpdateResult result = collection.replaceOne(filterDoc, doc, opts);
+            UpdateResult result = collection.replaceOne(filterDoc, replacement, opts);
 
             returnUpdateResult(call, result);
 
