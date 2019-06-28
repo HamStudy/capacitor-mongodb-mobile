@@ -13,12 +13,16 @@ import com.mongodb.client.model.CollationStrength;
 import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.model.CreateCollectionOptions;
 import com.mongodb.client.model.DeleteOptions;
+import com.mongodb.client.model.FindOneAndDeleteOptions;
+import com.mongodb.client.model.FindOneAndReplaceOptions;
+import com.mongodb.client.model.FindOneAndUpdateOptions;
 import com.mongodb.client.model.IndexModel;
 import com.mongodb.client.model.IndexOptionDefaults;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.InsertManyOptions;
 import com.mongodb.client.model.InsertOneOptions;
 import com.mongodb.client.model.ReplaceOptions;
+import com.mongodb.client.model.ReturnDocument;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.ValidationAction;
 import com.mongodb.client.model.ValidationLevel;
@@ -388,7 +392,7 @@ public class OptionParser {
 
         return opts;
     }
-    public static FindIterable<Document> applyFindOptions(FindIterable<Document> it, JSONObject obj) {
+    public static <TDocument> FindIterable<TDocument> applyFindOptions(FindIterable<TDocument> it, JSONObject obj) {
         if (obj == null) {
             return it;
         }
@@ -449,7 +453,7 @@ public class OptionParser {
 
         return it;
     }
-    public static AggregateIterable<Document> applyAggregateOptions(AggregateIterable<Document> it, JSONObject obj) {
+    public static <TDocument> AggregateIterable<TDocument> applyAggregateOptions(AggregateIterable<TDocument> it, JSONObject obj) {
         if (obj == null) {
             return it;
         }
@@ -553,5 +557,94 @@ public class OptionParser {
         IndexModel idx = new IndexModel(keys, opts);
 
         return idx;
+    }
+
+    public static FindOneAndDeleteOptions getFindOneAndDeleteOptions(JSONObject obj) {
+        if (obj == null) {
+            return null;
+        }
+
+        FindOneAndDeleteOptions opts = new FindOneAndDeleteOptions();
+        try {
+            opts.collation(getCollation(obj, "collation"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.maxTime(getInt64(obj, "maxTimeMS"), TimeUnit.MILLISECONDS);
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.projection(getDocument(obj, "projection"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.sort(getDocument(obj, "sort"));
+        } catch (InvalidKeyException ex) {}
+
+        return opts;
+    }
+
+    public static FindOneAndReplaceOptions getFindOneAndReplaceOptions(JSONObject obj) {
+        if (obj == null) {
+            return null;
+        }
+
+        FindOneAndReplaceOptions opts = new FindOneAndReplaceOptions();
+        try {
+            opts.bypassDocumentValidation(getBool(obj, "bypassDocumentValidation"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.collation(getCollation(obj, "collation"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.maxTime(getInt64(obj, "maxTimeMS"), TimeUnit.MILLISECONDS);
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.projection(getDocument(obj, "projection"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            boolean returnNewDocument = getBool(obj, "returnNewDocument");
+            opts.returnDocument(returnNewDocument ? ReturnDocument.AFTER : ReturnDocument.BEFORE);
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.sort(getDocument(obj, "sort"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.upsert(getBool(obj, "upsert"));
+        } catch (InvalidKeyException ex) {}
+
+        return opts;
+    }
+
+    public static FindOneAndUpdateOptions getFindOneAndUpdateOptions(JSONObject obj) {
+        if (obj == null) {
+            return null;
+        }
+
+        FindOneAndUpdateOptions opts = new FindOneAndUpdateOptions();
+        try {
+            opts.arrayFilters(getDocumentArray(obj, "arrayFilters"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.bypassDocumentValidation(getBool(obj, "bypassDocumentValidation"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.collation(getCollation(obj, "collation"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.maxTime(getInt64(obj, "maxTimeMS"), TimeUnit.MILLISECONDS);
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.projection(getDocument(obj, "projection"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            boolean returnNewDocument = getBool(obj, "returnNewDocument");
+            opts.returnDocument(returnNewDocument ? ReturnDocument.AFTER : ReturnDocument.BEFORE);
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.sort(getDocument(obj, "sort"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.upsert(getBool(obj, "upsert"));
+        } catch (InvalidKeyException ex) {}
+
+        return opts;
     }
 }

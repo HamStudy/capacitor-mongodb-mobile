@@ -27,6 +27,9 @@ import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.model.CreateCollectionOptions;
 import com.mongodb.client.model.DeleteOptions;
 import com.mongodb.client.model.DropIndexOptions;
+import com.mongodb.client.model.FindOneAndDeleteOptions;
+import com.mongodb.client.model.FindOneAndReplaceOptions;
+import com.mongodb.client.model.FindOneAndUpdateOptions;
 import com.mongodb.client.model.IndexModel;
 import com.mongodb.client.model.InsertManyOptions;
 import com.mongodb.client.model.InsertOneOptions;
@@ -43,10 +46,12 @@ import com.mongodb.client.MongoClient;
 // Necessary component for working with MongoDB Mobile
 import com.mongodb.stitch.android.services.mongodb.local.LocalMongoDbService;
 
+import org.bson.BsonDocument;
 import org.bson.BsonValue;
 import org.bson.ByteBuf;
 import org.bson.Document;
 import org.bson.RawBsonDocument;
+import org.bson.conversions.Bson;
 import org.bson.json.JsonMode;
 import org.bson.json.JsonWriterSettings;
 import org.hamstudy.capacitor.MongoDb.OptionParser;
@@ -62,7 +67,8 @@ public class MongoDBMobile extends Plugin {
     // Create a Client for MongoDB Mobile (initializing MongoDB Mobile)
     MongoClient mongoClient;
 
-    HashMap<UUID, MongoCursor<Document>> cursorMap = new HashMap<UUID, MongoCursor<Document>>();
+    HashMap<UUID, MongoCursor<Document>> cursorMap = new HashMap<>();
+    HashMap<UUID, MongoCursor<RawBsonDocument>> cursorMapBson = new HashMap<>();
 
     @PluginMethod()
     public void initDb(PluginCall call) {
@@ -95,13 +101,16 @@ public class MongoDBMobile extends Plugin {
         }
         return db;
     }
-    private MongoCollection<Document> getCollection(PluginCall call, MongoDatabase db) {
+    <TDocument> MongoCollection<TDocument> getCollection(PluginCall call, MongoDatabase db, Class<TDocument> documentClass) {
         String collectionName = call.getString("db", "");
         if (collectionName.isEmpty()) {
             throw new InvalidParameterException("collection name must be provided and must be a string");
         }
-        MongoCollection collection = db.getCollection(collectionName);
+        MongoCollection collection = db.getCollection(collectionName, documentClass);
         return collection;
+    }
+    private MongoCollection<Document> getCollection(PluginCall call, MongoDatabase db) {
+        return getCollection(call, db, Document.class);
     }
 
     /**
@@ -124,6 +133,30 @@ public class MongoDBMobile extends Plugin {
         UUID cursorId = UUID.randomUUID();
 
         cursorMap.put(cursorId, cursor);
+
+        JSObject ret = new JSObject();
+        ret.put("cursorId", cursorId.toString());
+        call.resolve(ret);
+    }
+
+    private JSObject getBsonBase64Doc(RawBsonDocument doc) {
+        ByteBuf data = doc.getByteBuffer();
+        String b64String = Base64.encodeToString(data.array(), Base64.DEFAULT);
+        JSObject obj = new JSObject();
+        obj.put("$b64", b64String);
+        return obj;
+    }
+
+    /**
+     * Helper to return a bson cursor to the page
+     * @param call
+     * @param cursor
+     */
+    private void returnCursorBson(PluginCall call, MongoCursor<RawBsonDocument> cursor) {
+
+        UUID cursorId = UUID.randomUUID();
+
+        cursorMapBson.put(cursorId, cursor);
 
         JSObject ret = new JSObject();
         ret.put("cursorId", cursorId.toString());
@@ -164,18 +197,7 @@ public class MongoDBMobile extends Plugin {
 
         while (cursor.hasNext()) {
             RawBsonDocument cur = cursor.next();
-            ByteBuf data = cur.getByteBuffer();
-            String b64String = Base64.encodeToString(data.array(), Base64.DEFAULT);
-
-            JSONObject obj = new JSONObject();
-            try {
-                obj.put("$b64", b64String);
-            } catch (Exception ex) {
-                handleError(call, "Could not wrap base64 string", ex);
-                return;
-            }
-
-            resultsJson.put(obj);
+            resultsJson.put(getBsonBase64Doc(cur));
         }
         JSObject ret = new JSObject();
         ret.put("results", resultsJson);
@@ -313,12 +335,19 @@ public class MongoDBMobile extends Plugin {
             }
             JSObject rootObj = new JSObject();
             rootObj.put("command", commandSrc);
-            Document command = OptionParser.getDocument(rootObj, "command");
-            Document reply = db.runCommand(command);
+            Document command = OptionParser.getDocument(commandSrc);
+
+            boolean useBson = call.getBoolean("useBson");
 
             JSObject ret = new JSObject();
-            ret.put("reply", new JSONObject(command.toJson(jsonSettings)));
+            if (useBson) {
+                RawBsonDocument reply = db.runCommand(command, RawBsonDocument.class);
+                ret.put("reply", getBsonBase64Doc(reply));
+            } else {
+                Document reply = db.runCommand(command);
 
+                ret.put("reply", new JSONObject(reply.toJson(jsonSettings)));
+            }
             call.resolve(ret);
 
         } catch (InvalidParameterException ex) {
@@ -357,23 +386,29 @@ public class MongoDBMobile extends Plugin {
     }
 
     private MongoCursor<Document> _find(PluginCall call) {
+        return _find(call, Document.class);
+    }
+    private <TDocument> MongoCursor<TDocument> _find(PluginCall call, Class<TDocument> documentClass) {
         Document filterDoc = OptionParser.getDocument(call.getObject("filter"));
         if (filterDoc == null) {
             filterDoc = new Document();
         }
 
         MongoDatabase db = getDatabase(call);
-        MongoCollection<Document> collection = getCollection(call, db);
+        MongoCollection<TDocument> collection = getCollection(call, db, documentClass);
 
-        FindIterable<Document> fi = collection.find(filterDoc);
+        FindIterable<TDocument> fi = collection.find(filterDoc);
         fi = OptionParser.applyFindOptions(fi, call.getObject("options"));
 
-        MongoCursor<Document> cursor = fi.iterator();
+        MongoCursor<TDocument> cursor = fi.iterator();
 
         return cursor;
     }
 
     private MongoCursor<Document> _execAggregate(PluginCall call) throws InvalidParameterException {
+        return _execAggregate(call, Document.class);
+    }
+    private <TDocument> MongoCursor<TDocument> _execAggregate(PluginCall call, Class<TDocument> documentClass) throws InvalidParameterException {
         List<Document> pipeline = null;
         try {
             pipeline = OptionParser.getDocumentArray(call.getArray("pipeline"));
@@ -382,13 +417,12 @@ public class MongoDBMobile extends Plugin {
             throw new InvalidParameterException("pipeline must be provided and must be an array of pipeline operations");
         }
 
-//        let aggOpts = try OptionsParser.getAggregateOptions(call.getObject("options"))
         MongoDatabase db = getDatabase(call);
-        MongoCollection<Document> collection = getCollection(call, db);
-        AggregateIterable<Document> ai = collection.aggregate(pipeline);
+        MongoCollection<TDocument> collection = getCollection(call, db, documentClass);
+        AggregateIterable<TDocument> ai = collection.aggregate(pipeline);
         ai = OptionParser.applyAggregateOptions(ai, call.getObject("options"));
 
-        MongoCursor<Document> cursor = ai.iterator();
+        MongoCursor<TDocument> cursor = ai.iterator();
 
         return cursor;
     }
@@ -397,14 +431,24 @@ public class MongoDBMobile extends Plugin {
     public void find(PluginCall call) {
         try {
             boolean useCursor = call.getBoolean("cursor", false);
+            boolean useBson = call.getBoolean("useBson");
 
-            MongoCursor<Document> cursor = _find(call);
-
-            if (useCursor) {
-                returnCursor(call, cursor);
+            if (useBson) {
+                MongoCursor<RawBsonDocument> cursor = _find(call, RawBsonDocument.class);
+                if (useCursor) {
+                    returnCursorBson(call, cursor);
+                } else {
+                    returnDocsFromCursorBson(call, cursor);
+                }
             } else {
-                returnDocsFromCursor(call, cursor);
+                MongoCursor<Document> cursor = _find(call);
+                if (useCursor) {
+                    returnCursor(call, cursor);
+                } else {
+                    returnDocsFromCursor(call, cursor);
+                }
             }
+
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
@@ -416,13 +460,22 @@ public class MongoDBMobile extends Plugin {
     public void aggregate(PluginCall call) {
         try {
             boolean useCursor = call.getBoolean("cursor", false);
+            boolean useBson = call.getBoolean("useBson");
 
-            MongoCursor<Document> cursor = _execAggregate(call);
-
-            if (useCursor) {
-                returnCursor(call, cursor);
+            if (useBson) {
+                MongoCursor<RawBsonDocument> cursor = _execAggregate(call, RawBsonDocument.class);
+                if (useCursor) {
+                    returnCursorBson(call, cursor);
+                } else {
+                    returnDocsFromCursorBson(call, cursor);
+                }
             } else {
-                returnDocsFromCursor(call, cursor);
+                MongoCursor<Document> cursor = _execAggregate(call);
+                if (useCursor) {
+                    returnCursor(call, cursor);
+                } else {
+                    returnDocsFromCursor(call, cursor);
+                }
             }
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
@@ -442,35 +495,54 @@ public class MongoDBMobile extends Plugin {
                 throw new InvalidParameterException("cursorId must be provided and must be a string");
             }
 
-            MongoCursor<Document> cursor = cursorMap.remove(cursorId);
+            MongoCursor<Document> cursor = cursorMap.get(cursorId);
+            MongoCursor<RawBsonDocument> bsonCursor = cursorMapBson.get(cursorId);
 
-            if (cursor == null) {
+            if (cursor == null && bsonCursor == null) {
                 throw new InvalidParameterException("cursorId does not refer to a valid cursor");
             }
 
-            boolean useBson = call.getBoolean("useBson");
             int batchSize = call.getInt("batchSize", 1);
             if (batchSize < 1) {
                 throw new InvalidParameterException("batchSize must be at least 1");
             }
 
-            JSArray resultsJson = new JSArray();
-            while (cursor.hasNext()) {
-                // TODO: Handle BSON output!
-                Document cur = cursor.next();
-                resultsJson.put(new JSONObject(cur.toJson(jsonSettings)));
-                if (resultsJson.length() >= batchSize) {
-                    break;
-                }
-            }
-
             JSObject ret = new JSObject();
-            ret.put("results", resultsJson);
-            if (resultsJson.length() == 0) {
-                // This is the end! Close the cursor and mark it complete
-                ret.put("complete", true);
-                cursor.close();
-                cursorMap.remove(cursorId);
+            JSArray resultsJson = new JSArray();
+            if (cursor != null) {
+                // normal output
+                while (cursor.hasNext()) {
+                    Document cur = cursor.next();
+                    resultsJson.put(new JSONObject(cur.toJson(jsonSettings)));
+                    if (resultsJson.length() >= batchSize) {
+                        break;
+                    }
+                }
+
+                ret.put("results", resultsJson);
+                if (resultsJson.length() == 0) {
+                    // This is the end! Close the cursor and mark it complete
+                    ret.put("complete", true);
+                    cursor.close();
+                    cursorMap.remove(cursorId);
+                }
+            } else {
+                // BSON base64 output
+                while (bsonCursor.hasNext()) {
+                    RawBsonDocument cur = bsonCursor.next();
+                    resultsJson.put(getBsonBase64Doc(cur));
+                    if (resultsJson.length() >= batchSize) {
+                        break;
+                    }
+                }
+
+                ret.put("results", resultsJson);
+                if (resultsJson.length() == 0) {
+                    // This is the end! Close the cursor and mark it complete
+                    ret.put("complete", true);
+                    bsonCursor.close();
+                    cursorMapBson.remove(cursorId);
+                }
             }
 
             call.resolve(ret);
@@ -494,11 +566,15 @@ public class MongoDBMobile extends Plugin {
             }
 
             MongoCursor<Document> cursor = cursorMap.remove(cursorId);
+            MongoCursor<RawBsonDocument> bsonCursor = cursorMapBson.remove(cursorId);
 
             JSObject ret = new JSObject();
             ret.put("success", true);
             if (cursor != null) {
                 cursor.close();
+                ret.put("removed", true);
+            } else if (bsonCursor != null) {
+                bsonCursor.close();
                 ret.put("removed", true);
             } else {
                 ret.put("removed", true);
@@ -853,6 +929,150 @@ public class MongoDBMobile extends Plugin {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
             handleError(call, "Could not execute listIndexes", ex);
+        }
+    }
+
+
+    /***************************
+     ** FINDANDMODIFY METHODS **
+     ***************************/
+    @PluginMethod()
+    public void findOneAndDelete(PluginCall call) {
+        try {
+            MongoDatabase db = getDatabase(call);
+            Document filterDoc = OptionParser.getDocument(call.getObject("filter"));
+            if (filterDoc == null) {
+                filterDoc = new Document();
+            }
+            FindOneAndDeleteOptions opts = OptionParser.getFindOneAndDeleteOptions(call.getObject("options"));
+            boolean useBson = call.getBoolean("useBson", false);
+
+
+            JSObject ret = new JSObject();
+            if (useBson) {
+                MongoCollection<RawBsonDocument> collection = getCollection(call, db, RawBsonDocument.class);
+
+                RawBsonDocument doc = collection.findOneAndDelete(filterDoc, opts);
+                if (doc == null) {
+                    ret.put("doc", null);
+                } else {
+                    ret.put("doc", getBsonBase64Doc(doc));
+                }
+            } else {
+                MongoCollection<Document> collection = getCollection(call, db);
+
+                Document doc = collection.findOneAndDelete(filterDoc, opts);
+                if (doc == null) {
+                    ret.put("doc", null);
+                } else {
+                    ret.put("doc", new JSObject(doc.toJson(jsonSettings)));
+                }
+            }
+
+            call.resolve(ret);
+
+        } catch (InvalidParameterException ex) {
+            handleError(call, ex.getMessage(), ex);
+        } catch (Exception ex) {
+            handleError(call, "Could not execute findOneAndDelete", ex);
+        }
+    }
+
+    @PluginMethod()
+    public void findOneAndReplace(PluginCall call) {
+        try {
+            MongoDatabase db = getDatabase(call);
+            Document filterDoc = OptionParser.getDocument(call.getObject("filter"));
+            if (filterDoc == null) {
+                filterDoc = new Document();
+            }
+            Document replacement = null;
+            try {
+                replacement = OptionParser.getDocument(call.getObject("replacement"));
+            } catch (Exception ex) {}
+            if (replacement == null) {
+                throw new InvalidParameterException("replacement must be a valid document object");
+            }
+            FindOneAndReplaceOptions opts = OptionParser.getFindOneAndReplaceOptions(call.getObject("options"));
+            boolean useBson = call.getBoolean("useBson", false);
+
+
+            JSObject ret = new JSObject();
+            if (useBson) {
+                MongoCollection<RawBsonDocument> collection = getCollection(call, db, RawBsonDocument.class);
+                RawBsonDocument repl = RawBsonDocument.parse(replacement.toJson(jsonSettings));
+
+                RawBsonDocument doc = collection.findOneAndReplace(filterDoc, repl, opts);
+                if (doc == null) {
+                    ret.put("doc", null);
+                } else {
+                    ret.put("doc", getBsonBase64Doc(doc));
+                }
+            } else {
+                MongoCollection<Document> collection = getCollection(call, db);
+
+                Document doc = collection.findOneAndReplace(filterDoc, replacement, opts);
+                if (doc == null) {
+                    ret.put("doc", null);
+                } else {
+                    ret.put("doc", new JSObject(doc.toJson(jsonSettings)));
+                }
+            }
+
+            call.resolve(ret);
+
+        } catch (InvalidParameterException ex) {
+            handleError(call, ex.getMessage(), ex);
+        } catch (Exception ex) {
+            handleError(call, "Could not execute findOneAndReplace", ex);
+        }
+    }
+
+    @PluginMethod()
+    public void findOneAndUpdate(PluginCall call) {
+        try {
+            MongoDatabase db = getDatabase(call);
+            Document filterDoc = OptionParser.getDocument(call.getObject("filter"));
+            if (filterDoc == null) {
+                filterDoc = new Document();
+            }
+            Document update = null;
+            try {
+                update = OptionParser.getDocument(call.getObject("update"));
+            } catch (Exception ex) {}
+            if (update == null) {
+                throw new InvalidParameterException("update must be a valid document object");
+            }
+            FindOneAndUpdateOptions opts = OptionParser.getFindOneAndUpdateOptions(call.getObject("options"));
+            boolean useBson = call.getBoolean("useBson", false);
+
+            JSObject ret = new JSObject();
+            if (useBson) {
+                MongoCollection<RawBsonDocument> collection = getCollection(call, db, RawBsonDocument.class);
+
+                RawBsonDocument doc = collection.findOneAndUpdate(filterDoc, update, opts);
+                if (doc == null) {
+                    ret.put("doc", null);
+                } else {
+                    ret.put("doc", getBsonBase64Doc(doc));
+                }
+            } else {
+                MongoCollection<Document> collection = getCollection(call, db);
+
+                Document doc = collection.findOneAndUpdate(filterDoc, update, opts);
+                if (doc == null) {
+                    ret.put("doc", null);
+                } else {
+                    ret.put("doc", new JSObject(doc.toJson(jsonSettings)));
+                }
+            }
+
+            call.resolve(ret);
+
+        } catch (InvalidParameterException ex) {
+            handleError(call, ex.getMessage(), ex);
+        } catch (Exception ex) {
+            handleError(call, "Could not execute findOneAndUpdate", ex);
         }
     }
 }
