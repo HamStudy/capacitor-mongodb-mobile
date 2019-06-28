@@ -12,12 +12,21 @@ import com.mongodb.client.model.CollationMaxVariable;
 import com.mongodb.client.model.CollationStrength;
 import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.model.CreateCollectionOptions;
+import com.mongodb.client.model.DeleteOptions;
 import com.mongodb.client.model.IndexOptionDefaults;
+import com.mongodb.client.model.InsertManyOptions;
+import com.mongodb.client.model.InsertOneOptions;
+import com.mongodb.client.model.ReplaceOptions;
+import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.ValidationAction;
 import com.mongodb.client.model.ValidationLevel;
 import com.mongodb.client.model.ValidationOptions;
 
+import org.bson.BsonDocument;
+import org.bson.BsonValue;
 import org.bson.Document;
+import org.bson.json.JsonMode;
+import org.bson.json.JsonWriterSettings;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,6 +39,7 @@ import java.util.concurrent.TimeUnit;
 
 
 public class OptionParser {
+    private static JsonWriterSettings jsonSettings = JsonWriterSettings.builder().outputMode(JsonMode.EXTENDED).build();
     static String InvalidArgErrorPrefix = "Invalid type for variable ";
     public static boolean getBool(JSONObject obj, String name) throws InvalidParameterException, InvalidKeyException {
         if (!obj.has(name)) {
@@ -122,6 +132,16 @@ public class OptionParser {
         }
         throw new InvalidParameterException(InvalidArgErrorPrefix + name + "; expected 'tailable' | 'nonTailable' | 'tailableAwait'");
     }
+    public static JSObject bsonToJson(BsonValue inVal) {
+        BsonDocument doc = new BsonDocument();
+        doc.put("_id", inVal);
+        try {
+            JSObject jsDoc = new JSObject(doc.toJson(jsonSettings));
+            return jsDoc.getJSObject("_id");
+        } catch (JSONException ex) {
+            return null;
+        }
+    }
     public static ArrayList<Document> getDocumentArray(JSONArray arr) throws InvalidParameterException {
         ArrayList<Document> outList = new ArrayList<Document>();
         for (int i = 0; i < arr.length(); ++i) {
@@ -133,7 +153,7 @@ public class OptionParser {
         }
         return outList;
     }
-    public static ArrayList<Document> getDocumentArray(JSObject obj, String name) throws InvalidParameterException, InvalidKeyException {
+    public static ArrayList<Document> getDocumentArray(JSONObject obj, String name) throws InvalidParameterException, InvalidKeyException {
         if (!obj.has(name)) {
             throw new InvalidKeyException(name);
         }
@@ -276,6 +296,90 @@ public class OptionParser {
         } catch (InvalidKeyException ex) {}
         try {
             opts.skip(getInt32(obj, "skip"));
+        } catch (InvalidKeyException ex) {}
+
+        return opts;
+    }
+    public static InsertOneOptions getInsertOneOptions(JSONObject obj) {
+        if (obj == null) {
+            return null;
+        }
+
+        InsertOneOptions opts = new InsertOneOptions();
+        try {
+            opts.bypassDocumentValidation(getBool(obj, "bypassDocumentValidation"));
+        } catch (InvalidKeyException ex) {}
+        return opts;
+    }
+    public static InsertManyOptions getInsertManyOptions(JSONObject obj) {
+        if (obj == null) {
+            return null;
+        }
+
+        InsertManyOptions opts = new InsertManyOptions();
+        try {
+            opts.bypassDocumentValidation(getBool(obj, "bypassDocumentValidation"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.ordered(getBool(obj, "ordered"));
+        } catch (InvalidKeyException ex) {}
+
+        return opts;
+    }
+
+    public static UpdateOptions getUpdateOptions(JSONObject obj) {
+        if (obj == null) {
+            return null;
+        }
+
+        UpdateOptions opts = new UpdateOptions();
+        try {
+            opts.arrayFilters(getDocumentArray(obj, "arrayFilters"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.bypassDocumentValidation(getBool(obj, "bypassDocumentValidation"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            Collation collation = getCollation(obj, "collation");
+            opts.collation(collation);
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.upsert(getBool(obj, "upsert"));
+        } catch (InvalidKeyException ex) {}
+
+        return opts;
+    }
+
+    public static ReplaceOptions getReplaceOptions(JSONObject obj) {
+        if (obj == null) {
+            return null;
+        }
+
+        ReplaceOptions opts = new ReplaceOptions();
+
+        try {
+            opts.bypassDocumentValidation(getBool(obj, "bypassDocumentValidation"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            Collation collation = getCollation(obj, "collation");
+            opts.collation(collation);
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.upsert(getBool(obj, "upsert"));
+        } catch (InvalidKeyException ex) {}
+
+        return opts;
+    }
+
+    public static DeleteOptions getDeleteOptions(JSONObject obj) {
+        if (obj == null) {
+            return null;
+        }
+
+        DeleteOptions opts = new DeleteOptions();
+        try {
+            Collation collation = getCollation(obj, "collation");
+            opts.collation(collation);
         } catch (InvalidKeyException ex) {}
 
         return opts;

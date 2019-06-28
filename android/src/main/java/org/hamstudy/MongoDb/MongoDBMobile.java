@@ -25,6 +25,13 @@ import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.model.CreateCollectionOptions;
+import com.mongodb.client.model.DeleteOptions;
+import com.mongodb.client.model.InsertManyOptions;
+import com.mongodb.client.model.InsertOneOptions;
+import com.mongodb.client.model.ReplaceOptions;
+import com.mongodb.client.model.UpdateOptions;
+import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.UpdateResult;
 import com.mongodb.stitch.android.core.Stitch;
 import com.mongodb.stitch.android.core.StitchAppClient;
 
@@ -34,12 +41,15 @@ import com.mongodb.client.MongoClient;
 // Necessary component for working with MongoDB Mobile
 import com.mongodb.stitch.android.services.mongodb.local.LocalMongoDbService;
 
+import org.bson.BsonValue;
 import org.bson.ByteBuf;
 import org.bson.Document;
 import org.bson.RawBsonDocument;
 import org.bson.json.JsonMode;
 import org.bson.json.JsonWriterSettings;
 import org.hamstudy.capacitor.MongoDb.OptionParser;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 
@@ -494,6 +504,260 @@ public class MongoDBMobile extends Plugin {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
             handleError(call, "Could not execute closeCursor", ex);
+        }
+    }
+    /*******************
+     ** WRITE METHODS **
+     *******************/
+    @PluginMethod()
+    public void insertOne(PluginCall call) {
+        try {
+            MongoDatabase db = getDatabase(call);
+            MongoCollection<Document> collection = getCollection(call, db);
+            Document doc = null;
+            try {
+                doc = OptionParser.getDocument(call.getObject("doc"));
+            } catch (Exception ex) {}
+            if (doc == null) {
+                throw new InvalidParameterException("doc must be a valid document object");
+            }
+
+            InsertOneOptions opts = OptionParser.getInsertOneOptions(call.getObject("options"));
+
+            collection.insertOne(doc, opts);
+
+            JSObject ret = new JSObject();
+
+            ret.put("success", true);
+
+            if (doc.containsKey("_id")) {
+                try {
+                    JSONObject fullDoc = new JSONObject(doc.toJson(jsonSettings));
+                    ret.put("insertedId", fullDoc.get("_id"));
+                } catch (JSONException ex) {
+                    ret.put("insertedId", null);
+                }
+            } else {
+                ret.put("insertedId", null);
+            }
+            call.resolve(ret);
+        } catch (InvalidParameterException ex) {
+            handleError(call, ex.getMessage(), ex);
+        } catch (Exception ex) {
+            handleError(call, "Could not execute dropCollection", ex);
+        }
+
+    }
+    @PluginMethod()
+    public void insertMany(PluginCall call) {
+        try {
+            MongoDatabase db = getDatabase(call);
+            MongoCollection<Document> collection = getCollection(call, db);
+
+            JSArray jsArr = call.getArray("docs");
+            if (jsArr == null) {
+                throw new InvalidParameterException("docs must be a valid array of documents to insert");
+            }
+            List<Document> docs = OptionParser.getDocumentArray(jsArr);
+
+            InsertManyOptions opts = OptionParser.getInsertManyOptions(call.getObject("options"));
+
+            collection.insertMany(docs, opts);
+
+            JSObject ret = new JSObject();
+            if (collection.getWriteConcern().getW() == 0) {
+                // Write preference is "don't wait", so we don't
+                // know how the write went
+                ret.put("success", true);
+                ret.put("insertedCount", null);
+                ret.put("insertedIds", null);
+                call.resolve(ret);
+                return;
+            }
+
+            // If we waited then we need to return a summary of what we inserted
+            JSArray insertedIds = new JSArray();
+            int insertedCount = 0;
+            for (Document doc : docs) {
+                try {
+                    JSObject docJson = new JSObject(doc.toJson(jsonSettings));
+                    insertedIds.put(docJson.get("_id"));
+                } catch (JSONException ex) {
+                    insertedIds.put(null);
+                }
+                insertedCount++;
+            }
+
+            ret.put("success", true);
+            ret.put("insertedCount", insertedCount);
+            ret.put("insertedIds", insertedIds);
+            call.resolve(ret);
+
+        } catch (InvalidParameterException ex) {
+            handleError(call, ex.getMessage(), ex);
+        } catch (Exception ex) {
+            handleError(call, "Could not execute dropCollection", ex);
+        }
+    }
+    private void returnUpdateResult(PluginCall call, UpdateResult res) {
+        JSObject ret = new JSObject();
+        ret.put("success", true);
+        if (res.wasAcknowledged()) {
+            ret.put("matchedCount", res.getMatchedCount());
+            ret.put("modifiedCount", res.isModifiedCountAvailable() ? res.getModifiedCount() : null);
+            BsonValue upsertedId = res.getUpsertedId();
+            ret.put("upsertedCount", upsertedId != null ? 1 : 0);
+            if (upsertedId != null) {
+                ret.put("upsertedCount", 1);
+                ret.put("upsertedId", OptionParser.bsonToJson(upsertedId));
+            } else {
+                ret.put("upsertedCount", 0);
+                ret.put("upsertedId", null);
+            }
+        } else {
+            ret.put("matchedCount", null);
+            ret.put("modifiedCount", null);
+            ret.put("upsertedCount", null);
+            ret.put("upsertedId", null);
+        }
+
+        call.resolve(ret);
+
+    }
+    @PluginMethod()
+    public void replaceOne(PluginCall call) {
+        try {
+            Document doc = null;
+            try {
+                doc = OptionParser.getDocument(call.getObject("doc"));
+            } catch (Exception ex) {}
+            if (doc == null) {
+                throw new InvalidParameterException("doc must be a valid document object");
+            }
+            Document filterDoc = OptionParser.getDocument(call.getObject("filter"));
+            if (filterDoc == null) {
+                filterDoc = new Document();
+            }
+
+            MongoDatabase db = getDatabase(call);
+            MongoCollection<Document> collection = getCollection(call, db);
+
+            ReplaceOptions opts = OptionParser.getReplaceOptions(call.getObject("options"));
+
+            UpdateResult result = collection.replaceOne(filterDoc, doc, opts);
+
+            returnUpdateResult(call, result);
+
+        } catch (InvalidParameterException ex) {
+            handleError(call, ex.getMessage(), ex);
+        } catch (Exception ex) {
+            handleError(call, "Could not execute dropCollection", ex);
+        }
+    }
+    @PluginMethod()
+    public void updateOne(PluginCall call) {
+        try {
+            MongoDatabase db = getDatabase(call);
+            MongoCollection<Document> collection = getCollection(call, db);
+            Document filterDoc = OptionParser.getDocument(call.getObject("filter"));
+            if (filterDoc == null) {
+                filterDoc = new Document();
+            }
+            Document update = null;
+            try {
+                update = OptionParser.getDocument(call.getObject("update"));
+            } catch (Exception ex) {}
+            if (update == null) {
+                throw new InvalidParameterException("update must be a valid document object");
+            }
+            UpdateOptions opts = OptionParser.getUpdateOptions(call.getObject("options"));
+
+            UpdateResult result = collection.updateOne(filterDoc, update, opts);
+
+            returnUpdateResult(call, result);
+
+        } catch (InvalidParameterException ex) {
+            handleError(call, ex.getMessage(), ex);
+        } catch (Exception ex) {
+            handleError(call, "Could not execute dropCollection", ex);
+        }
+    }
+    @PluginMethod()
+    public void updateMany(PluginCall call) {
+        try {
+            MongoDatabase db = getDatabase(call);
+            MongoCollection<Document> collection = getCollection(call, db);
+            Document filterDoc = OptionParser.getDocument(call.getObject("filter"));
+            if (filterDoc == null) {
+                filterDoc = new Document();
+            }
+            Document update = null;
+            try {
+                update = OptionParser.getDocument(call.getObject("update"));
+            } catch (Exception ex) {}
+            if (update == null) {
+                throw new InvalidParameterException("update must be a valid document object");
+            }
+            UpdateOptions opts = OptionParser.getUpdateOptions(call.getObject("options"));
+
+            UpdateResult result = collection.updateMany(filterDoc, update, opts);
+
+            returnUpdateResult(call, result);
+
+        } catch (InvalidParameterException ex) {
+            handleError(call, ex.getMessage(), ex);
+        } catch (Exception ex) {
+            handleError(call, "Could not execute dropCollection", ex);
+        }
+    }
+    @PluginMethod()
+    public void deleteOne(PluginCall call) {
+        try {
+            MongoDatabase db = getDatabase(call);
+            MongoCollection<Document> collection = getCollection(call, db);
+            Document filterDoc = OptionParser.getDocument(call.getObject("filter"));
+            if (filterDoc == null) {
+                filterDoc = new Document();
+            }
+            DeleteOptions opts = OptionParser.getDeleteOptions(call.getObject("options"));
+
+            DeleteResult result = collection.deleteOne(filterDoc, opts);
+
+            JSObject ret = new JSObject();
+            ret.put("success", true);
+            ret.put("deletedCount", result.wasAcknowledged() ? result.getDeletedCount() : null);
+
+            call.resolve(ret);
+
+        } catch (InvalidParameterException ex) {
+            handleError(call, ex.getMessage(), ex);
+        } catch (Exception ex) {
+            handleError(call, "Could not execute dropCollection", ex);
+        }
+    }
+    @PluginMethod()
+    public void deleteMany(PluginCall call) {
+        try {
+            MongoDatabase db = getDatabase(call);
+            MongoCollection<Document> collection = getCollection(call, db);
+            Document filterDoc = OptionParser.getDocument(call.getObject("filter"));
+            if (filterDoc == null) {
+                filterDoc = new Document();
+            }
+            DeleteOptions opts = OptionParser.getDeleteOptions(call.getObject("options"));
+
+            DeleteResult result = collection.deleteMany(filterDoc, opts);
+
+            JSObject ret = new JSObject();
+            ret.put("success", true);
+            ret.put("deletedCount", result.wasAcknowledged() ? result.getDeletedCount() : null);
+
+            call.resolve(ret);
+
+        } catch (InvalidParameterException ex) {
+            handleError(call, ex.getMessage(), ex);
+        } catch (Exception ex) {
+            handleError(call, "Could not execute dropCollection", ex);
         }
     }
 }
