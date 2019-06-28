@@ -26,6 +26,8 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.model.CreateCollectionOptions;
 import com.mongodb.client.model.DeleteOptions;
+import com.mongodb.client.model.DropIndexOptions;
+import com.mongodb.client.model.IndexModel;
 import com.mongodb.client.model.InsertManyOptions;
 import com.mongodb.client.model.InsertOneOptions;
 import com.mongodb.client.model.ReplaceOptions;
@@ -180,6 +182,7 @@ public class MongoDBMobile extends Plugin {
         call.resolve(ret);
     }
 
+
     /**********************
      ** DATABASE METHODS **
      **********************/
@@ -324,6 +327,7 @@ public class MongoDBMobile extends Plugin {
             handleError(call, "Could not execute runCommand", ex);
         }
     }
+
 
     /******************
      ** READ METHODS **
@@ -506,6 +510,8 @@ public class MongoDBMobile extends Plugin {
             handleError(call, "Could not execute closeCursor", ex);
         }
     }
+
+
     /*******************
      ** WRITE METHODS **
      *******************/
@@ -758,6 +764,95 @@ public class MongoDBMobile extends Plugin {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
             handleError(call, "Could not execute dropCollection", ex);
+        }
+    }
+
+
+    /*******************
+     ** INDEX METHODS **
+     *******************/
+    @PluginMethod()
+    public void createIndexes(PluginCall call) {
+        try {
+            MongoDatabase db = getDatabase(call);
+            MongoCollection<Document> collection = getCollection(call, db);
+
+            JSArray indexes = call.getArray("indexes");
+            if (indexes == null || indexes.length() == 0) {
+                throw new InvalidParameterException("indexes must be Array<[keys: Document, options?: IndexOptions]> with length >= 1");
+            }
+            ArrayList<IndexModel> indexModels = new ArrayList<>();
+
+            for (int i = 0; i < indexes.length(); ++i) {
+                JSONArray curDef;
+                try {
+                    curDef = indexes.getJSONArray(i);
+                } catch (JSONException ex) {
+                    throw new InvalidParameterException("indexes[" + i + "] must be [keys: Document, options?: IndexOptions] (as a 1 or 2 element array)");
+                }
+                JSONObject keys = curDef.getJSONObject(0);
+                JSONObject opts = curDef.length() > 1 ? curDef.getJSONObject(1) : null;
+
+                indexModels.add(OptionParser.getIndexModel(keys, opts));
+            }
+
+            List<String> createResults = collection.createIndexes(indexModels);
+
+            JSObject ret = new JSObject();
+            ret.put("indexesCreated", new JSArray(createResults));
+
+            call.resolve(ret);
+
+        } catch (InvalidParameterException ex) {
+            handleError(call, ex.getMessage(), ex);
+        } catch (Exception ex) {
+            handleError(call, "Could not execute createIndexes", ex);
+        }
+    }
+
+    @PluginMethod()
+    public void dropIndex(PluginCall call) {
+        try {
+            MongoDatabase db = getDatabase(call);
+            MongoCollection<Document> collection = getCollection(call, db);
+
+            String name = call.getString("name");
+            JSObject keys = call.getObject("keys");
+
+            DropIndexOptions opts = new DropIndexOptions();
+            // TODO: maxtime is supported only on android; should we support it?
+
+            if (name != null) {
+                collection.dropIndex(name, opts);
+            } else if (keys != null) {
+                Document keysDoc = OptionParser.getDocument(keys);
+                collection.dropIndex(keysDoc);
+            } else {
+                throw new InvalidParameterException("name: string or keys: {[keyName: string]: 1|-1} expected");
+            }
+
+            JSObject ret = new JSObject();
+            ret.put("done", true);
+
+        } catch (InvalidParameterException ex) {
+            handleError(call, ex.getMessage(), ex);
+        } catch (Exception ex) {
+            handleError(call, "Could not execute dropIndex", ex);
+        }
+    }
+
+    @PluginMethod()
+    public void listIndexes(PluginCall call) {
+        try {
+            MongoDatabase db = getDatabase(call);
+            MongoCollection<Document> collection = getCollection(call, db);
+
+            MongoCursor<Document> cursor = collection.listIndexes().iterator();
+            returnDocsFromCursor(call, cursor);
+        } catch (InvalidParameterException ex) {
+            handleError(call, ex.getMessage(), ex);
+        } catch (Exception ex) {
+            handleError(call, "Could not execute listIndexes", ex);
         }
     }
 }

@@ -13,7 +13,9 @@ import com.mongodb.client.model.CollationStrength;
 import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.model.CreateCollectionOptions;
 import com.mongodb.client.model.DeleteOptions;
+import com.mongodb.client.model.IndexModel;
 import com.mongodb.client.model.IndexOptionDefaults;
+import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.InsertManyOptions;
 import com.mongodb.client.model.InsertOneOptions;
 import com.mongodb.client.model.ReplaceOptions;
@@ -23,8 +25,10 @@ import com.mongodb.client.model.ValidationLevel;
 import com.mongodb.client.model.ValidationOptions;
 
 import org.bson.BsonDocument;
+import org.bson.BsonString;
 import org.bson.BsonValue;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.json.JsonMode;
 import org.bson.json.JsonWriterSettings;
 import org.json.JSONArray;
@@ -474,5 +478,80 @@ public class OptionParser {
         } catch (InvalidKeyException ex) {}
 
         return it;
+    }
+    public static IndexOptions getIndexOptions(JSONObject obj) {
+        if (obj == null) {
+            return null;
+        }
+
+        IndexOptions opts = new IndexOptions();
+        try {
+            opts.background(getBool(obj, "background"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.expireAfter(getInt64(obj, "expireAfter"), TimeUnit.MILLISECONDS);
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.name(getString(obj, "name"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.sparse(getBool(obj, "sparse"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.storageEngine(new BsonString(getString(obj, "storageEngine")).asDocument());
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.unique(getBool(obj, "unique"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.version(getInt32(obj, "version"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.defaultLanguage(getString(obj, "defaultLanguage"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.languageOverride(getString(obj, "languageOverride"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.textVersion(getInt32(obj, "textVersion"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.weights(getDocument(obj, "weights"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.sphereVersion(getInt32(obj, "sphereVersion"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.bits(getInt32(obj, "bits"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.max(getDouble(obj, "max"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.min(getDouble(obj, "min"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.bucketSize(getDouble(obj, "bucketSize"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.partialFilterExpression(getDocument(obj, "partialFilterExpression"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.collation(getCollation(obj, "collation"));
+        } catch (InvalidKeyException ex) {}
+
+        return opts;
+    }
+    public static IndexModel getIndexModel(JSONObject keysObj, JSONObject optsObj) {
+        if (keysObj == null) {
+            return null;
+        }
+        IndexOptions opts = optsObj != null ? getIndexOptions(optsObj) : null;
+
+        Document keys = getDocument(keysObj);
+
+        IndexModel idx = new IndexModel(keys, opts);
+
+        return idx;
     }
 }
