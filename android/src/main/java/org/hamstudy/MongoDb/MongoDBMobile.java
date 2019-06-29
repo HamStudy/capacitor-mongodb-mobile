@@ -17,14 +17,18 @@ import java.util.UUID;
 
 // Base Stitch Packages
 import com.mongodb.WriteConcern;
+import com.mongodb.bulk.BulkWriteResult;
+import com.mongodb.bulk.BulkWriteUpsert;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.ListDatabasesIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.BulkWriteOptions;
 import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.model.CreateCollectionOptions;
+import com.mongodb.client.model.DeleteOneModel;
 import com.mongodb.client.model.DeleteOptions;
 import com.mongodb.client.model.DropIndexOptions;
 import com.mongodb.client.model.FindOneAndDeleteOptions;
@@ -32,9 +36,14 @@ import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import com.mongodb.client.model.IndexModel;
 import com.mongodb.client.model.InsertManyOptions;
+import com.mongodb.client.model.InsertOneModel;
 import com.mongodb.client.model.InsertOneOptions;
+import com.mongodb.client.model.ReplaceOneModel;
 import com.mongodb.client.model.ReplaceOptions;
+import com.mongodb.client.model.UpdateManyModel;
+import com.mongodb.client.model.UpdateOneModel;
 import com.mongodb.client.model.UpdateOptions;
+import com.mongodb.client.model.DeleteManyModel;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 import com.mongodb.stitch.android.core.Stitch;
@@ -69,6 +78,8 @@ public class MongoDBMobile extends Plugin {
 
     HashMap<UUID, MongoCursor<Document>> cursorMap = new HashMap<>();
     HashMap<UUID, MongoCursor<RawBsonDocument>> cursorMapBson = new HashMap<>();
+
+    HashMap<UUID, BulkWriteBatch<Document>> bulkMap = new HashMap<>();
 
     @PluginMethod()
     public void initDb(PluginCall call) {
@@ -1075,4 +1086,356 @@ public class MongoDBMobile extends Plugin {
             handleError(call, "Could not execute findOneAndUpdate", ex);
         }
     }
+
+
+    /****************************
+     ** BULK OPERATION METHODS **
+     ****************************/
+    @PluginMethod()
+    public void newBulkWrite(PluginCall call) {
+        try {
+            MongoDatabase db = getDatabase(call);
+            MongoCollection<Document> collection = getCollection(call, db);
+
+            BulkWriteOptions opts = OptionParser.getBulkWriteOptions(call.getObject("options"));
+
+            UUID opId = UUID.randomUUID();
+
+            BulkWriteBatch<Document> batch = new BulkWriteBatch<>(collection, opts);
+            bulkMap.put(opId, batch);
+
+            JSObject ret = new JSObject();
+            ret.put("operationId", opId.toString());
+            call.resolve(ret);
+        } catch (InvalidParameterException ex) {
+            handleError(call, ex.getMessage(), ex);
+        } catch (Exception ex) {
+            handleError(call, "Could not execute findOneAndUpdate", ex);
+        }
+    }
+    @PluginMethod()
+    public void bulkWriteAddDeleteOne(PluginCall call) {
+        try {
+            String opIdStr = call.getString("operationId", "n/a");
+            UUID operationId = null;
+            try {
+                operationId = UUID.fromString(opIdStr);
+            } catch (IllegalArgumentException ex) {
+                throw new InvalidParameterException("operationId must be provided and must be a string");
+            }
+
+            BulkWriteBatch<Document> batch = bulkMap.get(operationId);
+
+            if (batch == null) {
+                throw new InvalidParameterException("operationId does not refer to a valid bulk operation");
+            }
+
+            Document filterDoc = OptionParser.getDocument(call.getObject("filter"));
+            if (filterDoc == null) {
+                filterDoc = new Document();
+            }
+
+            DeleteOptions opts = OptionParser.getDeleteOptions(call.getObject("options"));
+
+            DeleteOneModel<Document> operation = new DeleteOneModel<>(filterDoc, opts);
+
+            batch.addRequest(operation);
+
+            JSObject ret = new JSObject();
+            ret.put("success", true);
+            call.resolve(ret);
+        } catch (InvalidParameterException ex) {
+            handleError(call, ex.getMessage(), ex);
+        } catch (Exception ex) {
+            handleError(call, "Could not execute findOneAndUpdate", ex);
+        }
+
+    }
+    @PluginMethod()
+    public void bulkWriteAddDeleteMany(PluginCall call) {
+        try {
+            String opIdStr = call.getString("operationId", "n/a");
+            UUID operationId = null;
+            try {
+                operationId = UUID.fromString(opIdStr);
+            } catch (IllegalArgumentException ex) {
+                throw new InvalidParameterException("operationId must be provided and must be a string");
+            }
+
+            BulkWriteBatch<Document> batch = bulkMap.get(operationId);
+
+            if (batch == null) {
+                throw new InvalidParameterException("operationId does not refer to a valid bulk operation");
+            }
+
+            Document filterDoc = OptionParser.getDocument(call.getObject("filter"));
+            if (filterDoc == null) {
+                filterDoc = new Document();
+            }
+
+            DeleteOptions opts = OptionParser.getDeleteOptions(call.getObject("options"));
+            DeleteManyModel<Document> operation = new DeleteManyModel<>(filterDoc, opts);
+            batch.addRequest(operation);
+
+            JSObject ret = new JSObject();
+            ret.put("success", true);
+            call.resolve(ret);
+        } catch (InvalidParameterException ex) {
+            handleError(call, ex.getMessage(), ex);
+        } catch (Exception ex) {
+            handleError(call, "Could not execute findOneAndUpdate", ex);
+        }
+
+    }
+    @PluginMethod()
+    public void bulkWriteAddInsertOne(PluginCall call) {
+        try {
+            String opIdStr = call.getString("operationId", "n/a");
+            UUID operationId = null;
+            try {
+                operationId = UUID.fromString(opIdStr);
+            } catch (IllegalArgumentException ex) {
+                throw new InvalidParameterException("operationId must be provided and must be a string");
+            }
+
+            BulkWriteBatch<Document> batch = bulkMap.get(operationId);
+
+            if (batch == null) {
+                throw new InvalidParameterException("operationId does not refer to a valid bulk operation");
+            }
+
+            Document doc = null;
+            try {
+                doc = OptionParser.getDocument(call.getObject("doc"));
+            } catch (Exception ex) {}
+            if (doc == null) {
+                throw new InvalidParameterException("doc must be a valid document object");
+            }
+
+            InsertOneModel<Document> operation = new InsertOneModel<>(doc);
+            batch.addRequest(operation);
+
+            JSObject ret = new JSObject();
+            ret.put("success", true);
+            call.resolve(ret);
+        } catch (InvalidParameterException ex) {
+            handleError(call, ex.getMessage(), ex);
+        } catch (Exception ex) {
+            handleError(call, "Could not execute findOneAndUpdate", ex);
+        }
+
+    }
+    @PluginMethod()
+    public void bulkWriteAddReplaceOne(PluginCall call) {
+        try {
+            String opIdStr = call.getString("operationId", "n/a");
+            UUID operationId = null;
+            try {
+                operationId = UUID.fromString(opIdStr);
+            } catch (IllegalArgumentException ex) {
+                throw new InvalidParameterException("operationId must be provided and must be a string");
+            }
+
+            BulkWriteBatch<Document> batch = bulkMap.get(operationId);
+
+            if (batch == null) {
+                throw new InvalidParameterException("operationId does not refer to a valid bulk operation");
+            }
+
+            Document filterDoc = OptionParser.getDocument(call.getObject("filter"));
+            if (filterDoc == null) {
+                filterDoc = new Document();
+            }
+            Document replacement = null;
+            try {
+                replacement = OptionParser.getDocument(call.getObject("replacement"));
+            } catch (Exception ex) {}
+            if (replacement == null) {
+                throw new InvalidParameterException("replacement must be a valid document object");
+            }
+
+            ReplaceOptions opts = OptionParser.getReplaceOptions(call.getObject("options"));
+            ReplaceOneModel<Document> operation = new ReplaceOneModel<>(filterDoc, replacement, opts);
+            batch.addRequest(operation);
+
+            JSObject ret = new JSObject();
+            ret.put("success", true);
+            call.resolve(ret);
+        } catch (InvalidParameterException ex) {
+            handleError(call, ex.getMessage(), ex);
+        } catch (Exception ex) {
+            handleError(call, "Could not execute findOneAndUpdate", ex);
+        }
+
+    }
+    @PluginMethod()
+    public void bulkWriteAddUpdateOne(PluginCall call) {
+        try {
+            String opIdStr = call.getString("operationId", "n/a");
+            UUID operationId = null;
+            try {
+                operationId = UUID.fromString(opIdStr);
+            } catch (IllegalArgumentException ex) {
+                throw new InvalidParameterException("operationId must be provided and must be a string");
+            }
+
+            BulkWriteBatch<Document> batch = bulkMap.get(operationId);
+
+            if (batch == null) {
+                throw new InvalidParameterException("operationId does not refer to a valid bulk operation");
+            }
+
+            Document filterDoc = OptionParser.getDocument(call.getObject("filter"));
+            if (filterDoc == null) {
+                filterDoc = new Document();
+            }
+            Document update = null;
+            try {
+                update = OptionParser.getDocument(call.getObject("update"));
+            } catch (Exception ex) {}
+            if (update == null) {
+                throw new InvalidParameterException("update must be a valid document object");
+            }
+
+            UpdateOptions opts = OptionParser.getUpdateOptions(call.getObject("update"));
+            UpdateOneModel<Document> operation = new UpdateOneModel<>(filterDoc, update, opts);
+            batch.addRequest(operation);
+
+            JSObject ret = new JSObject();
+            ret.put("success", true);
+            call.resolve(ret);
+        } catch (InvalidParameterException ex) {
+            handleError(call, ex.getMessage(), ex);
+        } catch (Exception ex) {
+            handleError(call, "Could not execute findOneAndUpdate", ex);
+        }
+
+    }
+
+    @PluginMethod()
+    public void bulkWriteAddUpdateMany(PluginCall call) {
+        try {
+            String opIdStr = call.getString("operationId", "n/a");
+            UUID operationId = null;
+            try {
+                operationId = UUID.fromString(opIdStr);
+            } catch (IllegalArgumentException ex) {
+                throw new InvalidParameterException("operationId must be provided and must be a string");
+            }
+
+            BulkWriteBatch<Document> batch = bulkMap.get(operationId);
+
+            if (batch == null) {
+                throw new InvalidParameterException("operationId does not refer to a valid bulk operation");
+            }
+
+            Document filterDoc = OptionParser.getDocument(call.getObject("filter"));
+            if (filterDoc == null) {
+                filterDoc = new Document();
+            }
+            Document update = null;
+            try {
+                update = OptionParser.getDocument(call.getObject("update"));
+            } catch (Exception ex) {}
+            if (update == null) {
+                throw new InvalidParameterException("update must be a valid document object");
+            }
+
+            UpdateOptions opts = OptionParser.getUpdateOptions(call.getObject("update"));
+            UpdateManyModel<Document> operation = new UpdateManyModel<>(filterDoc, update, opts);
+            batch.addRequest(operation);
+
+            JSObject ret = new JSObject();
+            ret.put("success", true);
+            call.resolve(ret);
+        } catch (InvalidParameterException ex) {
+            handleError(call, ex.getMessage(), ex);
+        } catch (Exception ex) {
+            handleError(call, "Could not execute findOneAndUpdate", ex);
+        }
+
+    }
+
+    @PluginMethod()
+    public void bulkWriteCancel(PluginCall call) {
+        try {
+            String opIdStr = call.getString("operationId", "n/a");
+            UUID operationId = null;
+            try {
+                operationId = UUID.fromString(opIdStr);
+            } catch (IllegalArgumentException ex) {
+                throw new InvalidParameterException("operationId must be provided and must be a string");
+            }
+
+            BulkWriteBatch<Document> batch = bulkMap.remove(operationId);
+
+            JSObject ret = new JSObject();
+
+            ret.put("removed", batch != null);
+
+            call.resolve(ret);
+
+        } catch (InvalidParameterException ex) {
+            handleError(call, ex.getMessage(), ex);
+        } catch (Exception ex) {
+            handleError(call, "Could not execute findOneAndUpdate", ex);
+        }
+    }
+
+    @PluginMethod()
+    public void bulkWriteExecute(PluginCall call) {
+        try {
+            String opIdStr = call.getString("operationId", "n/a");
+            UUID operationId = null;
+            try {
+                operationId = UUID.fromString(opIdStr);
+            } catch (IllegalArgumentException ex) {
+                throw new InvalidParameterException("operationId must be provided and must be a string");
+            }
+
+            BulkWriteBatch<Document> batch = bulkMap.get(operationId);
+
+            if (batch == null) {
+                throw new InvalidParameterException("operationId does not refer to a valid bulk operation");
+            }
+
+            BulkWriteResult result = batch.execute();
+
+            JSObject ret = new JSObject();
+
+            if (!result.wasAcknowledged()) {
+                ret.put("deletedCount", null);
+                ret.put("insertedCount", null);
+                ret.put("matchedCount", null);
+                ret.put("modifiedCount", null);
+                ret.put("upsertedCount", null);
+                ret.put("insertedIds", null);
+                ret.put("upsertedIds", null);
+            } else {
+                ret.put("deletedCount", result.getDeletedCount());
+                ret.put("insertedCount", result.getInsertedCount());
+                ret.put("matchedCount", result.getMatchedCount());
+                ret.put("modifiedCount", result.getModifiedCount());
+
+                List<BulkWriteUpsert> upsertList = result.getUpserts();
+                ret.put("upsertedCount", upsertList.size());
+                JSArray upsertedIds = new JSArray();
+                for (BulkWriteUpsert upsert : upsertList) {
+                    upsertedIds.put(OptionParser.bsonToJson(upsert.getId()));
+                }
+                ret.put("upsertedIds", upsertedIds);
+                ret.put("insertedIds", null);
+            }
+
+            bulkMap.remove(operationId);
+            call.resolve(ret);
+
+        } catch (InvalidParameterException ex) {
+            handleError(call, ex.getMessage(), ex);
+        } catch (Exception ex) {
+            handleError(call, "Could not execute findOneAndUpdate", ex);
+        }
+
+    }
+
 }

@@ -1,10 +1,13 @@
 package org.hamstudy.capacitor.MongoDb;
 
+import android.util.Base64;
+
 import com.getcapacitor.JSObject;
 import com.mongodb.CursorType;
 import com.mongodb.WriteConcern;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.FindIterable;
+import com.mongodb.client.model.BulkWriteOptions;
 import com.mongodb.client.model.Collation;
 import com.mongodb.client.model.CollationAlternate;
 import com.mongodb.client.model.CollationCaseFirst;
@@ -32,6 +35,7 @@ import org.bson.BsonDocument;
 import org.bson.BsonString;
 import org.bson.BsonValue;
 import org.bson.Document;
+import org.bson.RawBsonDocument;
 import org.bson.conversions.Bson;
 import org.bson.json.JsonMode;
 import org.bson.json.JsonWriterSettings;
@@ -106,6 +110,18 @@ public class OptionParser {
         throw new InvalidParameterException(InvalidArgErrorPrefix + name + "; expected string");
     }
     public static Document getDocument(JSONObject obj) {
+        if (obj.has("$b64")) {
+            // This is a BSON document base64 encoded! Decode it.
+            try {
+                byte[] rawBytes = Base64.decode(obj.getString("$b64"), Base64.DEFAULT);
+                RawBsonDocument bsDoc = new RawBsonDocument(rawBytes);
+
+                // TODO: Is there a more efficient way to convert from a RawBsonDocument to a Document?
+                // Seems like there should be, but I can't find it.
+                return Document.parse(bsDoc.toJson(jsonSettings));
+            } catch (JSONException ex) {}
+        }
+
         return Document.parse(obj.toString());
     }
     public static Document getDocument(JSONObject obj, String name) throws InvalidParameterException, InvalidKeyException {
@@ -114,8 +130,6 @@ public class OptionParser {
         }
         try {
             JSONObject jsdoc = obj.getJSONObject(name);
-            // TODO: Support bson documents (base64 encoded)
-
             return getDocument(jsdoc);
         } catch (Exception ex) {}
 
@@ -643,6 +657,22 @@ public class OptionParser {
         } catch (InvalidKeyException ex) {}
         try {
             opts.upsert(getBool(obj, "upsert"));
+        } catch (InvalidKeyException ex) {}
+
+        return opts;
+    }
+
+    public static BulkWriteOptions getBulkWriteOptions(JSONObject obj) {
+        if (obj == null) {
+            return null;
+        }
+
+        BulkWriteOptions opts = new BulkWriteOptions();
+        try {
+            opts.bypassDocumentValidation(getBool(obj, "bypassDocumentValidation"));
+        } catch (InvalidKeyException ex) {}
+        try {
+            opts.ordered(getBool(obj, "ordered"));
         } catch (InvalidKeyException ex) {}
 
         return opts;
