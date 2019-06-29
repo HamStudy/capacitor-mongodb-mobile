@@ -1,4 +1,4 @@
-package org.hamstudy.capacitor.MongoDb;
+package org.hamstudy.MongoDb;
 
 import android.util.Base64;
 

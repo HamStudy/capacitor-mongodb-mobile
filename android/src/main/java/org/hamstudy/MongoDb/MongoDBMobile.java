@@ -55,15 +55,12 @@ import com.mongodb.client.MongoClient;
 // Necessary component for working with MongoDB Mobile
 import com.mongodb.stitch.android.services.mongodb.local.LocalMongoDbService;
 
-import org.bson.BsonDocument;
 import org.bson.BsonValue;
 import org.bson.ByteBuf;
 import org.bson.Document;
 import org.bson.RawBsonDocument;
-import org.bson.conversions.Bson;
 import org.bson.json.JsonMode;
 import org.bson.json.JsonWriterSettings;
-import org.hamstudy.capacitor.MongoDb.OptionParser;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -83,8 +80,9 @@ public class MongoDBMobile extends Plugin {
 
     @PluginMethod()
     public void initDb(PluginCall call) {
+        String appId = call.getString("appId", getAppId());
         final StitchAppClient client =
-                Stitch.initializeDefaultAppClient(getBridge().getActivity().getPackageName());
+                Stitch.initializeDefaultAppClient(appId);
 
         mongoClient = client.getServiceClient(LocalMongoDbService.clientFactory);
 
@@ -442,7 +440,7 @@ public class MongoDBMobile extends Plugin {
     public void find(PluginCall call) {
         try {
             boolean useCursor = call.getBoolean("cursor", false);
-            boolean useBson = call.getBoolean("useBson");
+            boolean useBson = call.getBoolean("useBson", false);
 
             if (useBson) {
                 MongoCursor<RawBsonDocument> cursor = _find(call, RawBsonDocument.class);
@@ -471,7 +469,7 @@ public class MongoDBMobile extends Plugin {
     public void aggregate(PluginCall call) {
         try {
             boolean useCursor = call.getBoolean("cursor", false);
-            boolean useBson = call.getBoolean("useBson");
+            boolean useBson = call.getBoolean("useBson", false);
 
             if (useBson) {
                 MongoCursor<RawBsonDocument> cursor = _execAggregate(call, RawBsonDocument.class);
@@ -886,7 +884,8 @@ public class MongoDBMobile extends Plugin {
             List<String> createResults = collection.createIndexes(indexModels);
 
             JSObject ret = new JSObject();
-            ret.put("indexesCreated", new JSArray(createResults));
+            String[] resultsArr = createResults.toArray(new String[createResults.size()]);
+            ret.put("indexesCreated", new JSArray(resultsArr));
 
             call.resolve(ret);
 
