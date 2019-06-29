@@ -40,9 +40,13 @@ Installing
 Current State
 =============
 
-With beta.2 out we believe we have full support on iOS but none on Android -- yet! It should not
-be too hard to port the plugin to Java to get android support working, we just need to find time to
-do it. 
+With beta.3 out we believe we have full support on iOS *and* Android -- but we've so far only
+tested a limited number of the APIs. We have not yet assembled an entire test suite, but at this
+point it's very likely that any lingering issues should be *relatively* easy to fix as long
+as we are aware of them and particularly if tests for them are added to the 
+[Capacitor MongoDB Mobile Test App](https://github.com/HamStudy/capacitor-mongodb-mobile-testApp)
+test suite (which uses the MongoDB Mobile Client library, but if needed tests could be added
+which don't).
 
 
 MongoDB Mobile Client
