@@ -48,6 +48,11 @@ as we are aware of them and particularly if tests for them are added to the
 test suite (which uses the MongoDB Mobile Client library, but if needed tests could be added
 which don't).
 
+Special considerations for Android
+==================================
+
+To work on an android emulator you *must* use one based on x86_64 -- the default is usually x86
+based and will not work due to missing mongodb libraries.
 
 MongoDB Mobile Client
 =====================
