@@ -26,7 +26,7 @@ extension MongoDBMobile {
         case .boolean, .dateTime, .double, .int32, .int64, .string:
             return bsonVal
         case .objectId:
-            return (bsonVal as! ObjectId).hex
+            return ["$oid": (bsonVal as! ObjectId).hex]
         case .regularExpression:
             return [
                 "$regex": (bsonVal as! RegularExpression).pattern,
@@ -95,10 +95,9 @@ extension MongoDBMobile {
                 return
             }
             
-            let stringIds = insertResult!.insertedIds.mapValues {bsonToJsValue($0)} as! [Int: String]
-            var idArray: [String] = []
-            for i in 0...stringIds.count-1 {
-                idArray.append(stringIds[i]!)
+            var idArray: [String:Any] = [:]
+            for (idx, oid) in insertResult!.insertedIds {
+                idArray["\(idx)"] = bsonToJsValue(oid)
             }
             call.resolve([
                 "success": true,
@@ -132,11 +131,11 @@ extension MongoDBMobile {
             
             let replaceResult = try collection.replaceOne(filter: filter, replacement: replacement, options: replaceOneOpts)
             var res: PluginResultData = [
-                "success": true,
-                "matchedCount": -1,
-                "modifiedCount": -1,
-                "upsertedCount": -1
+                "success": true
             ]
+            res["matchedCount"] = nil
+            res["modifiedCount"] = nil
+            res["upsertedCount"] = nil
             res["upsertedId"] = nil
             
             if (replaceResult != nil) {
@@ -178,12 +177,13 @@ extension MongoDBMobile {
             
             let updateResult = try collection.updateOne(filter: filter, update: update, options: updateOneOpts)
             var res: PluginResultData = [
-                "success": true,
-                "matchedCount": -1,
-                "modifiedCount": -1,
-                "upsertedCount": -1
+                "success": true
             ]
+            res["matchedCount"] = nil
+            res["modifiedCount"] = nil
+            res["upsertedCount"] = nil
             res["upsertedId"] = nil
+            
             if (updateResult != nil) {
                 res["matchedCount"] = updateResult!.matchedCount
                 res["modifiedCount"] = updateResult!.modifiedCount
@@ -222,12 +222,13 @@ extension MongoDBMobile {
             
             let updateResult = try collection.updateMany(filter: filter, update: update, options: updateOpts)
             var res: PluginResultData = [
-                "success": true,
-                "matchedCount": -1,
-                "modifiedCount": -1,
-                "upsertedCount": -1
+                "success": true
             ]
+            res["matchedCount"] = nil
+            res["modifiedCount"] = nil
+            res["upsertedCount"] = nil
             res["upsertedId"] = nil
+            
             if (updateResult != nil) {
                 res["matchedCount"] = updateResult!.matchedCount
                 res["modifiedCount"] = updateResult!.modifiedCount
