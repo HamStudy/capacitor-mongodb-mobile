@@ -111,7 +111,7 @@ public class MongoDBMobile extends Plugin {
         return db;
     }
     <TDocument> MongoCollection<TDocument> getCollection(PluginCall call, MongoDatabase db, Class<TDocument> documentClass) {
-        String collectionName = call.getString("db", "");
+        String collectionName = call.getString("collection", "");
         if (collectionName.isEmpty()) {
             throw new InvalidParameterException("collection name must be provided and must be a string");
         }
