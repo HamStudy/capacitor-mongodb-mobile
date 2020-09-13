@@ -197,7 +197,7 @@ public class OptionsParser {
         let returnKey: Bool? = try getBool(obj!["returnKey"], "returnKey")
         let showRecordId: Bool? = try getBool(obj!["showRecordId"], "showRecordId")
         let skip: Int64? = try getInt64(obj!["skip"], "skip")
-        let sort: Document? = try getDocument(obj!["document"], "document")
+        let sort: Document? = try getDocument(obj!["sort"], "sort")
         
         return FindOptions(allowPartialResults: allowPartialResults,
                            batchSize: batchSize,
@@ -408,7 +408,7 @@ public class OptionsParser {
         let collation = try getDocument(obj!["collation"], "collation")
         let maxTimeMS: Int64? = try getInt64(obj!["maxTimeMS"], "maxTimeMS")
         let projection: Document? = try getDocument(obj!["projection"], "projection")
-        let sort: Document? = try getDocument(obj!["document"], "document")
+        let sort: Document? = try getDocument(obj!["sort"], "sort")
         let writeConcern = try getWriteConcern(obj!["writeConcern"], "writeConcern")
 
         return FindOneAndDeleteOptions(collation: collation,
@@ -426,7 +426,7 @@ public class OptionsParser {
         let projection: Document? = try getDocument(obj!["projection"], "projection")
         let returnNewDocument = try getBool(obj!["returnNewDocument"], "returnNewDocument")
         let returnDocument: ReturnDocument? = (returnNewDocument != nil && returnNewDocument!) ? ReturnDocument.after : ReturnDocument.before
-        let sort: Document? = try getDocument(obj!["document"], "document")
+        let sort: Document? = try getDocument(obj!["sort"], "sort")
         let upsert = try getBool(obj!["upsert"], "upsert")
         let writeConcern = try getWriteConcern(obj!["writeConcern"], "writeConcern")
         
@@ -449,7 +449,7 @@ public class OptionsParser {
         let projection: Document? = try getDocument(obj!["projection"], "projection")
         let returnNewDocument = try getBool(obj!["returnNewDocument"], "returnNewDocument")
         let returnDocument: ReturnDocument? = (returnNewDocument != nil && returnNewDocument!) ? ReturnDocument.after : ReturnDocument.before
-        let sort: Document? = try getDocument(obj!["document"], "document")
+        let sort: Document? = try getDocument(obj!["sort"], "sort")
         let upsert = try getBool(obj!["upsert"], "upsert")
         let writeConcern = try getWriteConcern(obj!["writeConcern"], "writeConcern")
         
@@ -548,7 +548,7 @@ public class OptionsParser {
 //        let remove = try getBool(obj!["remove"], "remove")
 //        let returnNewDocument = try getBool(obj!["returnNewDocument"], "returnNewDocument")
 //        let returnDocument: ReturnDocument? = (returnNewDocument != nil && returnNewDocument!) ? ReturnDocument.after : ReturnDocument.before
-//        let sort: Document? = try getDocument(obj!["document"], "document")
+//        let sort: Document? = try getDocument(obj!["sort"], "sort")
 //        let upsert = try getBool(obj!["upsert"], "upsert")
 //        let writeConcern = try getWriteConcern(obj!["writeConcern"], "writeConcern")
 //
