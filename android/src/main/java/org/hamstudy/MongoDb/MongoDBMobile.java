@@ -315,7 +315,7 @@ public class MongoDBMobile extends Plugin {
 
             MongoDatabase db = getDatabase(call);
 
-            ArrayList<String> names = mongoClient.listDatabaseNames().into(new ArrayList<String>());
+            ArrayList<String> names = db.listCollectionNames().into(new ArrayList<String>());
             JSObject ret = new JSObject();
             if (names.contains(collectionName)) {
                 MongoCollection collection = db.getCollection(collectionName);
