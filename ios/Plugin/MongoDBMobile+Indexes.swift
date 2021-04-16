@@ -102,7 +102,7 @@ extension MongoDBMobile {
         } catch UserError.invalidArgumentError(let message) {
             handleError(call, message)
         } catch {
-            handleError(call, "Could not drop index")
+            handleError(call, "Could not list indexes")
         }
     }
 }

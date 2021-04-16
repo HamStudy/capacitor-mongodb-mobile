@@ -37,7 +37,7 @@ extension MongoDBMobile {
         } catch UserError.invalidArgumentError(let message) {
             handleError(call, message)
         } catch {
-            handleError(call, "Could not execute find")
+            handleError(call, "Could not execute count")
         }
         
     }

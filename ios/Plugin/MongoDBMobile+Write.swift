@@ -65,7 +65,7 @@ extension MongoDBMobile {
         } catch UserError.invalidArgumentError(let message) {
             handleError(call, message)
         } catch {
-            handleError(call, "Could not execute find")
+            handleError(call, "Could not execute insertOne")
         }
         
     }
@@ -107,7 +107,7 @@ extension MongoDBMobile {
         } catch UserError.invalidArgumentError(let message) {
             handleError(call, message)
         } catch {
-            handleError(call, "Could not execute find")
+            handleError(call, "Could not execute insertMany")
         }
     }
     @objc func replaceOne(_ call: CAPPluginCall) {
@@ -153,7 +153,7 @@ extension MongoDBMobile {
         } catch UserError.invalidArgumentError(let message) {
             handleError(call, message)
         } catch {
-            handleError(call, "Could not execute find")
+            handleError(call, "Could not execute replaceOne")
         }
     }
     @objc func updateOne(_ call: CAPPluginCall) {
@@ -198,7 +198,7 @@ extension MongoDBMobile {
         } catch UserError.invalidArgumentError(let message) {
             handleError(call, message)
         } catch {
-            handleError(call, "Could not execute find")
+            handleError(call, "Could not execute updateOne")
         }
     }
     @objc func updateMany(_ call: CAPPluginCall) {
@@ -242,7 +242,7 @@ extension MongoDBMobile {
         } catch UserError.invalidArgumentError(let message) {
             handleError(call, message)
         } catch {
-            handleError(call, "Could not execute find")
+            handleError(call, "Could not execute updateMany")
         }
     }
     @objc func deleteOne(_ call: CAPPluginCall) {
@@ -278,7 +278,7 @@ extension MongoDBMobile {
         } catch UserError.invalidArgumentError(let message) {
             handleError(call, message)
         } catch {
-            handleError(call, "Could not execute find")
+            handleError(call, "Could not execute deleteOne")
         }
     }
     @objc func deleteMany(_ call: CAPPluginCall) {
@@ -314,7 +314,7 @@ extension MongoDBMobile {
         } catch UserError.invalidArgumentError(let message) {
             handleError(call, message)
         } catch {
-            handleError(call, "Could not execute find")
+            handleError(call, "Could not execute deleteMany")
         }
     }
 }

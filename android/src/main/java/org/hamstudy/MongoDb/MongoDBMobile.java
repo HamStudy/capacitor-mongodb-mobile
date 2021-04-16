@@ -129,7 +129,7 @@ public class MongoDBMobile extends Plugin {
         handleError(call, message, null);
     }
     private void handleError(PluginCall call, String message, Exception error) {
-        call.error(message, error);
+        call.reject(message, error);
     }
 
     /**
@@ -256,7 +256,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute dropDatabase", ex);
+            handleError(call, "Could not execute dropDatabase: " + ex.getMessage(), ex);
         }
     }
 
@@ -279,7 +279,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute listCollections", ex);
+            handleError(call, "Could not execute listCollections: " + ex.getMessage(), ex);
         }
     }
 
@@ -302,7 +302,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute createCollection", ex);
+            handleError(call, "Could not execute createCollection: " + ex.getMessage(), ex);
         }
     }
     @PluginMethod()
@@ -329,7 +329,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute dropCollection", ex);
+            handleError(call, "Could not execute dropCollection: " + ex.getMessage(), ex);
         }
     }
 
@@ -362,7 +362,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute runCommand", ex);
+            handleError(call, "Could not execute runCommand: " + ex.getMessage(), ex);
         }
     }
 
@@ -390,7 +390,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute count", ex);
+            handleError(call, "Could not execute count: " + ex.getMessage(), ex);
         }
     }
 
@@ -461,7 +461,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute find", ex);
+            handleError(call, "Could not execute find: " + ex.getMessage(), ex);
         }
     }
 
@@ -489,7 +489,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute aggregate", ex);
+            handleError(call, "Could not execute aggregate: " + ex.getMessage(), ex);
         }
     }
 
@@ -558,7 +558,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute closeCursor", ex);
+            handleError(call, "Could not execute cursorGetNext: " + ex.getMessage(), ex);
         }
 
     }
@@ -592,7 +592,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute closeCursor", ex);
+            handleError(call, "Could not execute closeCursor: " + ex.getMessage(), ex);
         }
     }
 
@@ -635,7 +635,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute dropCollection", ex);
+            handleError(call, "Could not execute insertOne: " + ex.getMessage(), ex);
         }
 
     }
@@ -687,7 +687,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute dropCollection", ex);
+            handleError(call, "Could not execute insertMany: " + ex.getMessage(), ex);
         }
     }
     private void returnUpdateResult(PluginCall call, UpdateResult res) {
@@ -742,7 +742,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute dropCollection", ex);
+            handleError(call, "Could not execute replaceOne: " + ex.getMessage(), ex);
         }
     }
     @PluginMethod()
@@ -770,7 +770,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute dropCollection", ex);
+            handleError(call, "Could not execute updateOne: " + ex.getMessage(), ex);
         }
     }
     @PluginMethod()
@@ -798,7 +798,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute dropCollection", ex);
+            handleError(call, "Could not execute updateMany: " + ex.getMessage(), ex);
         }
     }
     @PluginMethod()
@@ -823,7 +823,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute dropCollection", ex);
+            handleError(call, "Could not execute deleteOne: " + ex.getMessage(), ex);
         }
     }
     @PluginMethod()
@@ -848,7 +848,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute dropCollection", ex);
+            handleError(call, "Could not execute deleteMany: " + ex.getMessage(), ex);
         }
     }
 
@@ -892,7 +892,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute createIndexes", ex);
+            handleError(call, "Could not execute createIndexes: " + ex.getMessage(), ex);
         }
     }
 
@@ -923,7 +923,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute dropIndex", ex);
+            handleError(call, "Could not execute dropIndex: " + ex.getMessage(), ex);
         }
     }
 
@@ -938,7 +938,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute listIndexes", ex);
+            handleError(call, "Could not execute listIndexes: " + ex.getMessage(), ex);
         }
     }
 
@@ -984,7 +984,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute findOneAndDelete", ex);
+            handleError(call, "Could not execute findOneAndDelete: " + ex.getMessage(), ex);
         }
     }
 
@@ -1034,7 +1034,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute findOneAndReplace", ex);
+            handleError(call, "Could not execute findOneAndReplace: " + ex.getMessage(), ex);
         }
     }
 
@@ -1082,7 +1082,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute findOneAndUpdate", ex);
+            handleError(call, "Could not execute findOneAndUpdate: " + ex.getMessage(), ex);
         }
     }
 
@@ -1109,7 +1109,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute findOneAndUpdate", ex);
+            handleError(call, "Could not execute newBulkWrite: " + ex.getMessage(), ex);
         }
     }
     @PluginMethod()
@@ -1146,7 +1146,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute findOneAndUpdate", ex);
+            handleError(call, "Could not execute bulkWriteAddDeleteOne: " + ex.getMessage(), ex);
         }
 
     }
@@ -1182,7 +1182,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute findOneAndUpdate", ex);
+            handleError(call, "Could not execute bulkWriteAddDeleteMany: " + ex.getMessage(), ex);
         }
 
     }
@@ -1220,7 +1220,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute findOneAndUpdate", ex);
+            handleError(call, "Could not execute bulkWriteAddInsertOne: " + ex.getMessage(), ex);
         }
 
     }
@@ -1263,7 +1263,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute findOneAndUpdate", ex);
+            handleError(call, "Could not execute bulkWriteAddReplaceOne: " + ex.getMessage(), ex);
         }
 
     }
@@ -1306,7 +1306,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute findOneAndUpdate", ex);
+            handleError(call, "Could not execute bulkWriteAddUpdateOne: " + ex.getMessage(), ex);
         }
 
     }
@@ -1350,7 +1350,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute findOneAndUpdate", ex);
+            handleError(call, "Could not execute bulkWriteAddUpdateMany: " + ex.getMessage(), ex);
         }
 
     }
@@ -1377,7 +1377,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute findOneAndUpdate", ex);
+            handleError(call, "Could not execute bulkWriteCancel: " + ex.getMessage(), ex);
         }
     }
 
@@ -1432,7 +1432,7 @@ public class MongoDBMobile extends Plugin {
         } catch (InvalidParameterException ex) {
             handleError(call, ex.getMessage(), ex);
         } catch (Exception ex) {
-            handleError(call, "Could not execute findOneAndUpdate", ex);
+            handleError(call, "Could not execute bulkWriteExecute: " + ex.getMessage(), ex);
         }
 
     }

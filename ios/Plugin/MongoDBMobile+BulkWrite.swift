@@ -58,7 +58,7 @@ extension MongoDBMobile {
         } catch UserError.invalidArgumentError(let message) {
             handleError(call, message)
         } catch {
-            handleError(call, "Could not execute findOneAndDelete")
+            handleError(call, "Could not execute newBulkWrite")
         }
     }
     @objc func bulkWriteAddDeleteOne(_ call: CAPPluginCall) {
@@ -90,7 +90,7 @@ extension MongoDBMobile {
         } catch UserError.invalidArgumentError(let message) {
             handleError(call, message)
         } catch {
-            handleError(call, "Could not execute findOneAndDelete")
+            handleError(call, "Could not execute bulkWriteAddDeleteOne")
         }
     }
     @objc func bulkWriteAddDeleteMany(_ call: CAPPluginCall) {
@@ -122,7 +122,7 @@ extension MongoDBMobile {
         } catch UserError.invalidArgumentError(let message) {
             handleError(call, message)
         } catch {
-            handleError(call, "Could not execute findOneAndDelete")
+            handleError(call, "Could not execute bulkWriteAddDeleteMany")
         }
     }
     @objc func bulkWriteAddInsertOne(_ call: CAPPluginCall) {
@@ -151,7 +151,7 @@ extension MongoDBMobile {
         } catch UserError.invalidArgumentError(let message) {
             handleError(call, message)
         } catch {
-            handleError(call, "Could not execute findOneAndDelete")
+            handleError(call, "Could not execute bulkWriteAddInsertOne")
         }
     }
     @objc func bulkWriteAddReplaceOne(_ call: CAPPluginCall) {
@@ -190,7 +190,7 @@ extension MongoDBMobile {
         } catch UserError.invalidArgumentError(let message) {
             handleError(call, message)
         } catch {
-            handleError(call, "Could not execute findOneAndDelete")
+            handleError(call, "Could not execute bulkWriteAddReplaceOne")
         }
     }
     @objc func bulkWriteAddUpdateOne(_ call: CAPPluginCall) {
@@ -230,7 +230,7 @@ extension MongoDBMobile {
         } catch UserError.invalidArgumentError(let message) {
             handleError(call, message)
         } catch {
-            handleError(call, "Could not execute findOneAndDelete")
+            handleError(call, "Could not execute bulkWriteAddUpdateOne")
         }
     }
     
@@ -271,7 +271,7 @@ extension MongoDBMobile {
         } catch UserError.invalidArgumentError(let message) {
             handleError(call, message)
         } catch {
-            handleError(call, "Could not execute findOneAndDelete")
+            handleError(call, "Could not execute bulkWriteAddUpdateMany")
         }
     }
 
@@ -292,7 +292,7 @@ extension MongoDBMobile {
         } catch UserError.invalidArgumentError(let message) {
             handleError(call, message)
         } catch {
-            handleError(call, "Could not execute findOneAndDelete")
+            handleError(call, "Could not execute bulkWriteCancel")
         }
     }
 
@@ -341,7 +341,7 @@ extension MongoDBMobile {
         } catch UserError.invalidArgumentError(let message) {
             handleError(call, message)
         } catch {
-            handleError(call, "Could not execute findOneAndDelete")
+            handleError(call, "Could not execute bulkWriteExecute")
         }
     }
 }

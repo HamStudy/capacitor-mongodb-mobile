@@ -84,7 +84,7 @@ extension MongoDBMobile {
         } catch UserError.invalidArgumentError(let message) {
             handleError(call, message)
         } catch {
-            handleError(call, "Could not execute findOneAndDelete")
+            handleError(call, "Could not execute findOneAndReplace")
         }
     }
     
@@ -123,7 +123,7 @@ extension MongoDBMobile {
         } catch UserError.invalidArgumentError(let message) {
             handleError(call, message)
         } catch {
-            handleError(call, "Could not execute findOneAndDelete")
+            handleError(call, "Could not execute findOneAndUpdate")
         }
     }
     
